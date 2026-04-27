@@ -1,51 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<title>Marker AR Stable</title>
 
-<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-<script>
-AFRAME.registerComponent("lock-model",{
-init:function(){
-
-let marker=this.el;
-let model=document.querySelector("#model");
-
-marker.addEventListener("markerFound",()=>{
-
-let pos=new THREE.Vector3();
-marker.object3D.getWorldPosition(pos);
-
-model.object3D.position.copy(pos);
-model.setAttribute("visible",true);
-
-marker.setAttribute("visible",false);
-
-});
+<style>
+body {
+margin:0;
+overflow:hidden;
 }
-});
-</script>
+
+#btns{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+z-index:999;
+}
+
+button{
+padding:12px;
+margin:5px;
+font-size:18px;
+}
+</style>
 
 </head>
 
-<body style="margin:0">
+<body>
 
-<a-scene embedded arjs="sourceType: webcam;">
+<div id="btns">
+<button onclick="zoomIn()">Zoom +</button>
+<button onclick="zoomOut()">Zoom -</button>
+<button onclick="bigger()">Size +</button>
+<button onclick="smaller()">Size -</button>
+</div>
 
-<a-marker preset="hiro" lock-model></a-marker>
+<a-scene
+embedded
+renderer="logarithmicDepthBuffer:true;"
+vr-mode-ui="enabled:false"
+arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
+
+<!-- MARKER -->
+<a-marker
+type="pattern"
+url="marker.patt"
+id="marker">
 
 <a-entity
 id="model"
-gltf-model="./1.glb"
-scale="1 1 1"
-visible="false">
+gltf-model="1.glb"
+scale="0.5 0.5 0.5"
+position="0 0 0"
+rotation="-90 0 0">
 </a-entity>
+
+</a-marker>
 
 <a-entity camera></a-entity>
 
 </a-scene>
+
+<script>
+
+let model = document.querySelector("#model");
+let marker = document.querySelector("#marker");
+
+let visibleOnce = false;
+
+/* ---------- KEEP MODEL AFTER MARKER LOST ---------- */
+
+marker.addEventListener("markerFound", () => {
+visibleOnce = true;
+});
+
+marker.addEventListener("markerLost", () => {
+if(visibleOnce){
+model.object3D.visible = true;
+}
+});
+
+/* ---------- SIZE CONTROL ---------- */
+
+function bigger(){
+let s = model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
+}
+
+function smaller(){
+let s = model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
+}
+
+/* ---------- CAMERA ZOOM FIX ---------- */
+
+function zoomIn(){
+let p = model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z-0.2));
+}
+
+function zoomOut(){
+let p = model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z+0.2));
+}
+
+</script>
 
 </body>
 </html>
