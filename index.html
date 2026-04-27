@@ -11,7 +11,7 @@ body{margin:0;overflow:hidden;}
 
 .controls{
 position:fixed;
-bottom:15px;
+bottom:10px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
@@ -19,12 +19,11 @@ z-index:999;
 
 button{
 padding:10px;
-margin:4px;
-font-size:16px;
+margin:3px;
 background:black;
 color:white;
 border:none;
-border-radius:8px;
+border-radius:6px;
 }
 </style>
 </head>
@@ -32,8 +31,6 @@ border-radius:8px;
 <body>
 
 <div class="controls">
-<button onclick="zoomIn()">Zoom+</button>
-<button onclick="zoomOut()">Zoom-</button>
 <button onclick="rotateL()">⟲</button>
 <button onclick="rotateR()">⟳</button>
 <button onclick="scaleUp()">Size+</button>
@@ -46,18 +43,19 @@ renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
 arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
-<!-- YOUR MARKER -->
+<!-- MARKER -->
 <a-marker type="pattern" url="marker.patt" id="marker">
 
 <a-entity
 id="model"
 gltf-model="1.glb"
-position="0 0 0"
 rotation="-90 0 0"
-scale="0.4 0.4 0.4">
+scale="0.001 0.001 0.001">
 </a-entity>
 
 </a-marker>
+
+<a-entity id="world"></a-entity>
 
 <a-entity camera></a-entity>
 
@@ -65,63 +63,58 @@ scale="0.4 0.4 0.4">
 
 <script>
 
-let model=document.querySelector("#model");
 let marker=document.querySelector("#marker");
+let model=document.querySelector("#model");
+let world=document.querySelector("#world");
 
-let placed=false;
+let placedModel=null;
 
-/* ---------- KEEP MODEL FIXED ---------- */
+/* ---------- PLACE MODEL ONCE ---------- */
 
 marker.addEventListener("markerFound",()=>{
-placed=true;
+
+if(placedModel) return;
+
+placedModel=model.cloneNode(true);
+
+let pos=new THREE.Vector3();
+marker.object3D.getWorldPosition(pos);
+
+placedModel.setAttribute("position",
+pos.x+" "+pos.y+" "+pos.z);
+
+world.appendChild(placedModel);
+
 });
 
-marker.addEventListener("markerLost",()=>{
-if(placed){
-model.object3D.visible=true;
-}
-});
-
-/* ---------- ZOOM ---------- */
-
-function zoomIn(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z-0.2));
-}
-
-function zoomOut(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z+0.2));
-}
-
-/* ---------- ROTATE ---------- */
+/* ---------- CONTROLS ---------- */
 
 function rotateL(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
+if(!placedModel) return;
+let r=placedModel.getAttribute("rotation");
+placedModel.setAttribute("rotation",
 r.x+" "+(r.y-15)+" "+r.z);
 }
 
 function rotateR(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
+if(!placedModel) return;
+let r=placedModel.getAttribute("rotation");
+placedModel.setAttribute("rotation",
 r.x+" "+(r.y+15)+" "+r.z);
 }
 
-/* ---------- SCALE ---------- */
-
 function scaleUp(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
+if(!placedModel) return;
+let s=placedModel.getAttribute("scale");
+placedModel.setAttribute("scale",
+(s.x+0.0005)+" "+(s.y+0.0005)+" "+(s.z+0.0005));
 }
 
 function scaleDown(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
+if(!placedModel) return;
+let s=placedModel.getAttribute("scale");
+placedModel.setAttribute("scale",
+(s.x-0.0005)+" "+(s.y-0.0005)+" "+(s.z-0.0005));
 }
 
 </script>
