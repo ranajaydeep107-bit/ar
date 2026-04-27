@@ -2,20 +2,20 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Marker AR Stable</title>
 
 <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
-body {
+body{
 margin:0;
 overflow:hidden;
+font-family:Arial;
 }
 
-#btns{
+.controls{
 position:fixed;
-bottom:20px;
+bottom:15px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
@@ -23,20 +23,25 @@ z-index:999;
 
 button{
 padding:12px;
-margin:5px;
-font-size:18px;
+margin:4px;
+font-size:16px;
+border-radius:8px;
+border:none;
+background:#111;
+color:white;
 }
 </style>
-
 </head>
 
 <body>
 
-<div id="btns">
+<div class="controls">
 <button onclick="zoomIn()">Zoom +</button>
 <button onclick="zoomOut()">Zoom -</button>
-<button onclick="bigger()">Size +</button>
-<button onclick="smaller()">Size -</button>
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
+<button onclick="scaleUp()">Size +</button>
+<button onclick="scaleDown()">Size -</button>
 </div>
 
 <a-scene
@@ -46,17 +51,14 @@ vr-mode-ui="enabled:false"
 arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
 <!-- MARKER -->
-<a-marker
-type="pattern"
-url="marker.patt"
-id="marker">
+<a-marker type="pattern" url="marker.patt" id="marker">
 
 <a-entity
 id="model"
 gltf-model="1.glb"
-scale="0.5 0.5 0.5"
 position="0 0 0"
-rotation="-90 0 0">
+rotation="-90 0 0"
+scale="0.4 0.4 0.4">
 </a-entity>
 
 </a-marker>
@@ -67,49 +69,63 @@ rotation="-90 0 0">
 
 <script>
 
-let model = document.querySelector("#model");
-let marker = document.querySelector("#marker");
+let model=document.querySelector("#model");
+let marker=document.querySelector("#marker");
 
-let visibleOnce = false;
+let fixed=false;
 
-/* ---------- KEEP MODEL AFTER MARKER LOST ---------- */
+/* ---------- FIX MODEL IN PLACE ---------- */
 
-marker.addEventListener("markerFound", () => {
-visibleOnce = true;
+marker.addEventListener("markerFound",()=>{
+fixed=true;
 });
 
-marker.addEventListener("markerLost", () => {
-if(visibleOnce){
-model.object3D.visible = true;
+marker.addEventListener("markerLost",()=>{
+if(fixed){
+model.object3D.visible=true;
 }
 });
 
-/* ---------- SIZE CONTROL ---------- */
-
-function bigger(){
-let s = model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
-}
-
-function smaller(){
-let s = model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
-}
-
-/* ---------- CAMERA ZOOM FIX ---------- */
+/* ---------- ZOOM ---------- */
 
 function zoomIn(){
-let p = model.getAttribute("position");
+let p=model.getAttribute("position");
 model.setAttribute("position",
 p.x+" "+p.y+" "+(p.z-0.2));
 }
 
 function zoomOut(){
-let p = model.getAttribute("position");
+let p=model.getAttribute("position");
 model.setAttribute("position",
 p.x+" "+p.y+" "+(p.z+0.2));
+}
+
+/* ---------- ROTATION ---------- */
+
+function rotateLeft(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y-15)+" "+r.z);
+}
+
+function rotateRight(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y+15)+" "+r.z);
+}
+
+/* ---------- SCALE ---------- */
+
+function scaleUp(){
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
+}
+
+function scaleDown(){
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
 }
 
 </script>
