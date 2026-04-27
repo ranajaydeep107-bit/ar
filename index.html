@@ -11,20 +11,20 @@ body{margin:0;overflow:hidden;}
 
 .controls{
 position:fixed;
-bottom:20px;
+bottom:15px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
 }
 
 button{
-padding:12px;
-margin:4px;
-font-size:16px;
-border:none;
-border-radius:8px;
+padding:10px;
+margin:3px;
+font-size:14px;
 background:black;
 color:white;
+border:none;
+border-radius:8px;
 }
 </style>
 </head>
@@ -32,21 +32,19 @@ color:white;
 <body>
 
 <div class="controls">
-<button onclick="zoomIn()">Zoom +</button>
-<button onclick="zoomOut()">Zoom -</button>
-<button onclick="rotateLeft()">⟲</button>
-<button onclick="rotateRight()">⟳</button>
-<button onclick="scaleUp()">Size +</button>
-<button onclick="scaleDown()">Size -</button>
+<button onclick="toggleFix()">Fix / Unfix</button>
+<button onclick="setScale(1)">1:1</button>
+<button onclick="setScale(0.5)">1:2</button>
+<button onclick="setScale(0.25)">1:4</button>
+<button onclick="setScale(2)">2X</button>
 </div>
 
 <a-scene
 embedded
 renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
-arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
+arjs="trackingMethod: best; sourceType:webcam; debugUIEnabled:false;">
 
-<!-- MARKER -->
 <a-marker preset="hiro" id="marker">
 
 <a-entity
@@ -59,86 +57,115 @@ rotation="-90 0 0">
 
 </a-marker>
 
-<!-- WORLD SPACE -->
-<a-entity id="world"></a-entity>
-
 <a-entity camera></a-entity>
 
 </a-scene>
 
 <script>
 
-let marker=document.querySelector("#marker");
 let model=document.querySelector("#model");
-let world=document.querySelector("#world");
+let marker=document.querySelector("#marker");
 
-let placedModel=null;
+let fixed=false;
+let baseScale=0.5;
 
-/* ---------- PLACE MODEL ONCE ---------- */
+/* ---------- FIX BUTTON ---------- */
 
-marker.addEventListener("markerFound",()=>{
+function toggleFix(){
+fixed=!fixed;
+}
 
-if(placedModel) return;
+/* ---------- EXACT SCALE ---------- */
 
-placedModel=model.cloneNode(true);
+function setScale(r){
+baseScale=r;
+model.setAttribute("scale",`${r} ${r} ${r}`);
+}
 
-let pos=new THREE.Vector3();
-marker.object3D.getWorldPosition(pos);
+/* ---------- TOUCH GESTURE CONTROL ---------- */
 
-placedModel.setAttribute(
-"position",
-`${pos.x} ${pos.y} ${pos.z}`
+let startDistance=0;
+let startRotation=0;
+let lastAngle=0;
+
+function getDistance(t1,t2){
+let dx=t1.clientX-t2.clientX;
+let dy=t1.clientY-t2.clientY;
+return Math.sqrt(dx*dx+dy*dy);
+}
+
+function getAngle(t1,t2){
+return Math.atan2(
+t2.clientY-t1.clientY,
+t2.clientX-t1.clientX
+)*180/Math.PI;
+}
+
+document.addEventListener("touchstart",(e)=>{
+
+if(e.touches.length==2){
+
+startDistance=getDistance(
+e.touches[0],
+e.touches[1]
 );
 
-world.appendChild(placedModel);
+lastAngle=getAngle(
+e.touches[0],
+e.touches[1]
+);
 
-model.setAttribute("visible",false);
+}
 
 });
 
-/* ---------- CONTROLS ---------- */
+document.addEventListener("touchmove",(e)=>{
 
-function zoomIn(){
-if(!placedModel) return;
-let p=placedModel.getAttribute("position");
-placedModel.setAttribute("position",
-`${p.x} ${p.y} ${p.z-0.2}`);
+if(!fixed) return;
+
+if(e.touches.length==2){
+
+/* ---------- PINCH ZOOM ---------- */
+
+let newDistance=getDistance(
+e.touches[0],
+e.touches[1]
+);
+
+let scaleChange=(newDistance-startDistance)*0.001;
+
+baseScale+=scaleChange;
+
+if(baseScale<0.05) baseScale=0.05;
+
+model.setAttribute(
+"scale",
+`${baseScale} ${baseScale} ${baseScale}`
+);
+
+startDistance=newDistance;
+
+/* ---------- ROTATION ---------- */
+
+let newAngle=getAngle(
+e.touches[0],
+e.touches[1]
+);
+
+let angleChange=newAngle-lastAngle;
+
+let rot=model.getAttribute("rotation");
+
+model.setAttribute(
+"rotation",
+`${rot.x} ${rot.y+angleChange} ${rot.z}`
+);
+
+lastAngle=newAngle;
+
 }
 
-function zoomOut(){
-if(!placedModel) return;
-let p=placedModel.getAttribute("position");
-placedModel.setAttribute("position",
-`${p.x} ${p.y} ${p.z+0.2}`);
-}
-
-function rotateLeft(){
-if(!placedModel) return;
-let r=placedModel.getAttribute("rotation");
-placedModel.setAttribute("rotation",
-`${r.x} ${r.y-15} ${r.z}`);
-}
-
-function rotateRight(){
-if(!placedModel) return;
-let r=placedModel.getAttribute("rotation");
-placedModel.setAttribute("rotation",
-`${r.x} ${r.y+15} ${r.z}`);
-}
-
-function scaleUp(){
-if(!placedModel) return;
-let s=placedModel.getAttribute("scale");
-placedModel.setAttribute("scale",
-`${s.x+0.1} ${s.y+0.1} ${s.z+0.1}`);
-}
-
-function scaleDown(){
-if(!placedModel) return;
-let s=placedModel.getAttribute("scale");
-placedModel.setAttribute("scale",
-`${s.x-0.1} ${s.y-0.1} ${s.z-0.1}`);
-}
+});
 
 </script>
 
