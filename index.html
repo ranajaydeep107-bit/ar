@@ -7,10 +7,7 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
-body{
-margin:0;
-overflow:hidden;
-}
+body{margin:0;overflow:hidden;}
 
 .controls{
 position:fixed;
@@ -49,7 +46,7 @@ renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
 arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
-<!-- HIRO MARKER -->
+<!-- MARKER -->
 <a-marker preset="hiro" id="marker">
 
 <a-entity
@@ -62,69 +59,85 @@ rotation="-90 0 0">
 
 </a-marker>
 
+<!-- WORLD SPACE -->
+<a-entity id="world"></a-entity>
+
 <a-entity camera></a-entity>
 
 </a-scene>
 
 <script>
 
-let model=document.querySelector("#model");
 let marker=document.querySelector("#marker");
+let model=document.querySelector("#model");
+let world=document.querySelector("#world");
 
-let fixed=false;
+let placedModel=null;
 
-/* ---------- FIX MODEL AFTER MARKER LOST ---------- */
+/* ---------- PLACE MODEL ONCE ---------- */
 
 marker.addEventListener("markerFound",()=>{
-fixed=true;
+
+if(placedModel) return;
+
+placedModel=model.cloneNode(true);
+
+let pos=new THREE.Vector3();
+marker.object3D.getWorldPosition(pos);
+
+placedModel.setAttribute(
+"position",
+`${pos.x} ${pos.y} ${pos.z}`
+);
+
+world.appendChild(placedModel);
+
+model.setAttribute("visible",false);
+
 });
 
-marker.addEventListener("markerLost",()=>{
-if(fixed){
-model.object3D.visible=true;
-}
-});
-
-/* ---------- ZOOM ---------- */
+/* ---------- CONTROLS ---------- */
 
 function zoomIn(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z-0.2));
+if(!placedModel) return;
+let p=placedModel.getAttribute("position");
+placedModel.setAttribute("position",
+`${p.x} ${p.y} ${p.z-0.2}`);
 }
 
 function zoomOut(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z+0.2));
+if(!placedModel) return;
+let p=placedModel.getAttribute("position");
+placedModel.setAttribute("position",
+`${p.x} ${p.y} ${p.z+0.2}`);
 }
 
-/* ---------- ROTATE ---------- */
-
 function rotateLeft(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y-15)+" "+r.z);
+if(!placedModel) return;
+let r=placedModel.getAttribute("rotation");
+placedModel.setAttribute("rotation",
+`${r.x} ${r.y-15} ${r.z}`);
 }
 
 function rotateRight(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y+15)+" "+r.z);
+if(!placedModel) return;
+let r=placedModel.getAttribute("rotation");
+placedModel.setAttribute("rotation",
+`${r.x} ${r.y+15} ${r.z}`);
 }
 
-/* ---------- SCALE ---------- */
-
 function scaleUp(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
+if(!placedModel) return;
+let s=placedModel.getAttribute("scale");
+placedModel.setAttribute("scale",
+`${s.x+0.1} ${s.y+0.1} ${s.z+0.1}`);
 }
 
 function scaleDown(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
+if(!placedModel) return;
+let s=placedModel.getAttribute("scale");
+placedModel.setAttribute("scale",
+`${s.x-0.1} ${s.y-0.1} ${s.z-0.1}`);
 }
 
 </script>
