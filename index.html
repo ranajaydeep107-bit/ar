@@ -1,122 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
 <body style="margin:0; overflow:hidden;">
 
 <a-scene embedded arjs>
 
-<a-marker preset="hiro">
-<a-entity
-gltf-model="model.glb"
-scale="0.5 0.5 0.5">
-</a-entity>
-</a-marker>
+  <!-- QR Marker -->
+  <a-marker preset="hiro">
 
-<a-entity camera></a-entity>
+    <a-entity
+      gltf-model="1.glb"
+      scale="0.5 0.5 0.5"
+      position="0 0 0">
+    </a-entity>
 
-</a-scene>
+  </a-marker>
 
-</body>
-</html>
-
-<div class="controls">
-<button onclick="zoomIn()">Zoom +</button>
-<button onclick="zoomOut()">Zoom -</button>
-<button onclick="rotateLeft()">⟲</button>
-<button onclick="rotateRight()">⟳</button>
-<button onclick="scaleUp()">Size +</button>
-<button onclick="scaleDown()">Size -</button>
-</div>
-
-<a-scene
-embedded
-renderer="logarithmicDepthBuffer:true;"
-vr-mode-ui="enabled:false"
-arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
-
-<!-- MARKER -->
-<a-marker type="pattern" url="marker.patt" id="marker">
-
-<a-entity
-id="model"
-gltf-model="1.glb"
-position="0 0 0"
-rotation="-90 0 0"
-scale="0.4 0.4 0.4">
-</a-entity>
-
-</a-marker>
-
-<a-entity camera></a-entity>
+  <a-entity camera></a-entity>
 
 </a-scene>
-
-<script>
-
-let model=document.querySelector("#model");
-let marker=document.querySelector("#marker");
-
-let fixed=false;
-
-/* ---------- FIX MODEL IN PLACE ---------- */
-
-marker.addEventListener("markerFound",()=>{
-fixed=true;
-});
-
-marker.addEventListener("markerLost",()=>{
-if(fixed){
-model.object3D.visible=true;
-}
-});
-
-/* ---------- ZOOM ---------- */
-
-function zoomIn(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z-0.2));
-}
-
-function zoomOut(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z+0.2));
-}
-
-/* ---------- ROTATION ---------- */
-
-function rotateLeft(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y-15)+" "+r.z);
-}
-
-function rotateRight(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y+15)+" "+r.z);
-}
-
-/* ---------- SCALE ---------- */
-
-function scaleUp(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
-}
-
-function scaleDown(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
-}
-
-</script>
 
 </body>
 </html>
