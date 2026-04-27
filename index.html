@@ -1,28 +1,133 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<meta charset="utf-8">
+
+<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+}
+
+.controls{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+z-index:999;
+}
+
+button{
+padding:12px;
+margin:4px;
+font-size:16px;
+border:none;
+border-radius:8px;
+background:black;
+color:white;
+}
+</style>
 </head>
 
-<body style="margin:0; overflow:hidden;">
+<body>
 
-<a-scene embedded arjs>
+<div class="controls">
+<button onclick="zoomIn()">Zoom +</button>
+<button onclick="zoomOut()">Zoom -</button>
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
+<button onclick="scaleUp()">Size +</button>
+<button onclick="scaleDown()">Size -</button>
+</div>
 
-  <!-- QR Marker -->
-  <a-marker preset="hiro">
+<a-scene
+embedded
+renderer="logarithmicDepthBuffer:true;"
+vr-mode-ui="enabled:false"
+arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
-    <a-entity
-      gltf-model="1.glb"
-      scale="0.5 0.5 0.5"
-      position="0 0 0">
-    </a-entity>
+<!-- HIRO MARKER -->
+<a-marker preset="hiro" id="marker">
 
-  </a-marker>
+<a-entity
+id="model"
+gltf-model="1.glb"
+scale="0.5 0.5 0.5"
+position="0 0 0"
+rotation="-90 0 0">
+</a-entity>
 
-  <a-entity camera></a-entity>
+</a-marker>
+
+<a-entity camera></a-entity>
 
 </a-scene>
+
+<script>
+
+let model=document.querySelector("#model");
+let marker=document.querySelector("#marker");
+
+let fixed=false;
+
+/* ---------- FIX MODEL AFTER MARKER LOST ---------- */
+
+marker.addEventListener("markerFound",()=>{
+fixed=true;
+});
+
+marker.addEventListener("markerLost",()=>{
+if(fixed){
+model.object3D.visible=true;
+}
+});
+
+/* ---------- ZOOM ---------- */
+
+function zoomIn(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z-0.2));
+}
+
+function zoomOut(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z+0.2));
+}
+
+/* ---------- ROTATE ---------- */
+
+function rotateLeft(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y-15)+" "+r.z);
+}
+
+function rotateRight(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y+15)+" "+r.z);
+}
+
+/* ---------- SCALE ---------- */
+
+function scaleUp(){
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
+}
+
+function scaleDown(){
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
+}
+
+</script>
 
 </body>
 </html>
