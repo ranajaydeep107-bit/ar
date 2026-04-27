@@ -7,27 +7,24 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
-body{
-margin:0;
-overflow:hidden;
-}
+body{margin:0;overflow:hidden;}
 
 .controls{
 position:fixed;
-bottom:20px;
+bottom:15px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
 }
 
 button{
-padding:12px;
+padding:10px;
 margin:4px;
 font-size:16px;
-border:none;
-border-radius:8px;
 background:black;
 color:white;
+border:none;
+border-radius:8px;
 }
 </style>
 </head>
@@ -35,12 +32,12 @@ color:white;
 <body>
 
 <div class="controls">
-<button onclick="zoomIn()">Zoom +</button>
-<button onclick="zoomOut()">Zoom -</button>
-<button onclick="rotateLeft()">⟲</button>
-<button onclick="rotateRight()">⟳</button>
-<button onclick="scaleUp()">Size +</button>
-<button onclick="scaleDown()">Size -</button>
+<button onclick="zoomIn()">Zoom+</button>
+<button onclick="zoomOut()">Zoom-</button>
+<button onclick="rotateL()">⟲</button>
+<button onclick="rotateR()">⟳</button>
+<button onclick="scaleUp()">Size+</button>
+<button onclick="scaleDown()">Size-</button>
 </div>
 
 <a-scene
@@ -49,15 +46,15 @@ renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
 arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
-<!-- HIRO MARKER -->
-<a-marker preset="hiro" id="marker">
+<!-- YOUR MARKER -->
+<a-marker type="pattern" url="marker.patt" id="marker">
 
 <a-entity
 id="model"
 gltf-model="1.glb"
-scale="0.5 0.5 0.5"
 position="0 0 0"
-rotation="-90 0 0">
+rotation="-90 0 0"
+scale="0.4 0.4 0.4">
 </a-entity>
 
 </a-marker>
@@ -71,16 +68,16 @@ rotation="-90 0 0">
 let model=document.querySelector("#model");
 let marker=document.querySelector("#marker");
 
-let fixed=false;
+let placed=false;
 
-/* ---------- FIX MODEL AFTER MARKER LOST ---------- */
+/* ---------- KEEP MODEL FIXED ---------- */
 
 marker.addEventListener("markerFound",()=>{
-fixed=true;
+placed=true;
 });
 
 marker.addEventListener("markerLost",()=>{
-if(fixed){
+if(placed){
 model.object3D.visible=true;
 }
 });
@@ -101,13 +98,13 @@ p.x+" "+p.y+" "+(p.z+0.2));
 
 /* ---------- ROTATE ---------- */
 
-function rotateLeft(){
+function rotateL(){
 let r=model.getAttribute("rotation");
 model.setAttribute("rotation",
 r.x+" "+(r.y-15)+" "+r.z);
 }
 
-function rotateRight(){
+function rotateR(){
 let r=model.getAttribute("rotation");
 model.setAttribute("rotation",
 r.x+" "+(r.y+15)+" "+r.z);
