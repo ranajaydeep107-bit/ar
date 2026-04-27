@@ -7,12 +7,11 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
+
 body{
 margin:0;
 overflow:hidden;
 }
-
-/* ---------- UI ---------- */
 
 .controls{
 position:fixed;
@@ -20,28 +19,52 @@ bottom:20px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
+text-align:center;
 }
 
 button{
-padding:12px;
-margin:4px;
-font-size:16px;
+padding:10px;
+margin:3px;
+font-size:14px;
 border:none;
 border-radius:8px;
 background:black;
 color:white;
 }
+
 </style>
 </head>
 
 <body>
 
-<!-- ================= UI BUTTONS ================= -->
+<!-- ================= CONTROL BUTTONS ================= -->
 
 <div class="controls">
-<button onclick="toggleFix()">Fix</button>
+
+<button onclick="zoomIn()">Zoom +</button>
+<button onclick="zoomOut()">Zoom -</button>
+
+<br>
+
 <button onclick="scaleUp()">Size +</button>
 <button onclick="scaleDown()">Size -</button>
+
+<br>
+
+<!-- Y Rotation -->
+<button onclick="rotateLeft()">⟲ Y</button>
+<button onclick="rotateRight()">⟳ Y</button>
+
+<br>
+
+<!-- X Axis -->
+<button onclick="rotXPlus()">X+</button>
+<button onclick="rotXMinus()">X-</button>
+
+<!-- Z Axis -->
+<button onclick="rotZPlus()">Z+</button>
+<button onclick="rotZMinus()">Z-</button>
+
 </div>
 
 <!-- ================= AR SCENE ================= -->
@@ -51,6 +74,8 @@ embedded
 renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
 arjs="trackingMethod:best; sourceType:webcam; debugUIEnabled:false;">
+
+<!-- HIRO MARKER -->
 
 <a-marker preset="hiro" id="marker">
 
@@ -72,18 +97,16 @@ rotation="-90 0 0">
 
 <script>
 
-let model = document.querySelector("#model");
-let marker = document.querySelector("#marker");
+let model=document.querySelector("#model");
+let marker=document.querySelector("#marker");
 
 let fixed=false;
-let scaleValue=0.5;
 
-/* ================= FIX / UNFIX ================= */
+/* ---------- KEEP MODEL AFTER MARKER LOST ---------- */
 
-function toggleFix(){
-fixed=!fixed;
-alert(fixed ? "Model Fixed" : "Model Follow Marker");
-}
+marker.addEventListener("markerFound",()=>{
+fixed=true;
+});
 
 marker.addEventListener("markerLost",()=>{
 if(fixed){
@@ -91,105 +114,75 @@ model.object3D.visible=true;
 }
 });
 
-/* ================= EXACT SCALE ================= */
+/* ---------- ZOOM ---------- */
+
+function zoomIn(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z-0.2));
+}
+
+function zoomOut(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z+0.2));
+}
+
+/* ---------- Y ROTATION ---------- */
+
+function rotateLeft(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y-15)+" "+r.z);
+}
+
+function rotateRight(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+(r.y+15)+" "+r.z);
+}
+
+/* ---------- SCALE ---------- */
 
 function scaleUp(){
-scaleValue+=0.1;
-applyScale();
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
 }
 
 function scaleDown(){
-scaleValue-=0.1;
-if(scaleValue<0.1) scaleValue=0.1;
-applyScale();
-}
-
-function applyScale(){
+let s=model.getAttribute("scale");
 model.setAttribute("scale",
-scaleValue+" "+scaleValue+" "+scaleValue);
+(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
 }
 
-/* ================= TOUCH CONTROLS ================= */
+/* ---------- X AXIS ROTATION ---------- */
 
-let startX,startY;
-let startDistance=null;
-let startAngle=null;
-
-/* ----- helpers ----- */
-
-function distance(t){
-let dx=t[0].clientX-t[1].clientX;
-let dy=t[0].clientY-t[1].clientY;
-return Math.sqrt(dx*dx+dy*dy);
-}
-
-function angle(t){
-let dx=t[1].clientX-t[0].clientX;
-let dy=t[1].clientY-t[0].clientY;
-return Math.atan2(dy,dx)*180/Math.PI;
-}
-
-/* ================= TOUCH START ================= */
-
-document.addEventListener("touchstart",(e)=>{
-
-if(e.touches.length==1){
-startX=e.touches[0].clientX;
-startY=e.touches[0].clientY;
-}
-
-if(e.touches.length==2){
-startDistance=distance(e.touches);
-startAngle=angle(e.touches);
-}
-
-});
-
-/* ================= TOUCH MOVE ================= */
-
-document.addEventListener("touchmove",(e)=>{
-
-/* ---------- MOVE (X,Y) ---------- */
-if(e.touches.length==1){
-
-let dx=e.touches[0].clientX-startX;
-let dy=e.touches[0].clientY-startY;
-
-let pos=model.getAttribute("position");
-
-model.setAttribute("position",
-(pos.x+dx*0.001)+" "+
-(pos.y-dy*0.001)+" "+
-pos.z);
-
-startX=e.touches[0].clientX;
-startY=e.touches[0].clientY;
-}
-
-/* ---------- PINCH ZOOM + ROTATE ---------- */
-if(e.touches.length==2){
-
-/* ZOOM */
-let newDistance=distance(e.touches);
-let change=(newDistance-startDistance)*0.002;
-
-scaleValue+=change;
-if(scaleValue<0.1) scaleValue=0.1;
-
-applyScale();
-startDistance=newDistance;
-
-/* ROTATE */
-let newAngle=angle(e.touches);
-let rot=model.getAttribute("rotation");
-
+function rotXPlus(){
+let r=model.getAttribute("rotation");
 model.setAttribute("rotation",
-rot.x+" "+(rot.y+(newAngle-startAngle))+" "+rot.z);
-
-startAngle=newAngle;
+(r.x+15)+" "+r.y+" "+r.z);
 }
 
-});
+function rotXMinus(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+(r.x-15)+" "+r.y+" "+r.z);
+}
+
+/* ---------- Z AXIS ROTATION ---------- */
+
+function rotZPlus(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+r.y+" "+(r.z+15));
+}
+
+function rotZMinus(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
+r.x+" "+r.y+" "+(r.z-15));
+}
 
 </script>
 
