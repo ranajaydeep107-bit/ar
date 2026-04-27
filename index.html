@@ -7,23 +7,27 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
-body{margin:0;overflow:hidden;}
+body{
+margin:0;
+overflow:hidden;
+}
 
 .controls{
 position:fixed;
-bottom:10px;
+bottom:20px;
 left:50%;
 transform:translateX(-50%);
 z-index:999;
 }
 
 button{
-padding:10px;
-margin:3px;
+padding:12px;
+margin:4px;
+font-size:16px;
+border:none;
+border-radius:8px;
 background:black;
 color:white;
-border:none;
-border-radius:6px;
 }
 </style>
 </head>
@@ -31,10 +35,12 @@ border-radius:6px;
 <body>
 
 <div class="controls">
-<button onclick="rotateL()">⟲</button>
-<button onclick="rotateR()">⟳</button>
-<button onclick="scaleUp()">Size+</button>
-<button onclick="scaleDown()">Size-</button>
+<button onclick="zoomIn()">Zoom +</button>
+<button onclick="zoomOut()">Zoom -</button>
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
+<button onclick="scaleUp()">Size +</button>
+<button onclick="scaleDown()">Size -</button>
 </div>
 
 <a-scene
@@ -43,19 +49,18 @@ renderer="logarithmicDepthBuffer:true;"
 vr-mode-ui="enabled:false"
 arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled:false;">
 
-<!-- MARKER -->
-<a-marker type="pattern" url="marker.patt" id="marker">
+<!-- HIRO MARKER -->
+<a-marker preset="hiro" id="marker">
 
 <a-entity
 id="model"
 gltf-model="1.glb"
-rotation="-90 0 0"
-scale="0.001 0.001 0.001">
+scale="0.5 0.5 0.5"
+position="0 0 0"
+rotation="-90 0 0">
 </a-entity>
 
 </a-marker>
-
-<a-entity id="world"></a-entity>
 
 <a-entity camera></a-entity>
 
@@ -63,58 +68,63 @@ scale="0.001 0.001 0.001">
 
 <script>
 
-let marker=document.querySelector("#marker");
 let model=document.querySelector("#model");
-let world=document.querySelector("#world");
+let marker=document.querySelector("#marker");
 
-let placedModel=null;
+let fixed=false;
 
-/* ---------- PLACE MODEL ONCE ---------- */
+/* ---------- FIX MODEL AFTER MARKER LOST ---------- */
 
 marker.addEventListener("markerFound",()=>{
-
-if(placedModel) return;
-
-placedModel=model.cloneNode(true);
-
-let pos=new THREE.Vector3();
-marker.object3D.getWorldPosition(pos);
-
-placedModel.setAttribute("position",
-pos.x+" "+pos.y+" "+pos.z);
-
-world.appendChild(placedModel);
-
+fixed=true;
 });
 
-/* ---------- CONTROLS ---------- */
+marker.addEventListener("markerLost",()=>{
+if(fixed){
+model.object3D.visible=true;
+}
+});
 
-function rotateL(){
-if(!placedModel) return;
-let r=placedModel.getAttribute("rotation");
-placedModel.setAttribute("rotation",
+/* ---------- ZOOM ---------- */
+
+function zoomIn(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z-0.2));
+}
+
+function zoomOut(){
+let p=model.getAttribute("position");
+model.setAttribute("position",
+p.x+" "+p.y+" "+(p.z+0.2));
+}
+
+/* ---------- ROTATE ---------- */
+
+function rotateLeft(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
 r.x+" "+(r.y-15)+" "+r.z);
 }
 
-function rotateR(){
-if(!placedModel) return;
-let r=placedModel.getAttribute("rotation");
-placedModel.setAttribute("rotation",
+function rotateRight(){
+let r=model.getAttribute("rotation");
+model.setAttribute("rotation",
 r.x+" "+(r.y+15)+" "+r.z);
 }
 
+/* ---------- SCALE ---------- */
+
 function scaleUp(){
-if(!placedModel) return;
-let s=placedModel.getAttribute("scale");
-placedModel.setAttribute("scale",
-(s.x+0.0005)+" "+(s.y+0.0005)+" "+(s.z+0.0005));
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
 }
 
 function scaleDown(){
-if(!placedModel) return;
-let s=placedModel.getAttribute("scale");
-placedModel.setAttribute("scale",
-(s.x-0.0005)+" "+(s.y-0.0005)+" "+(s.z-0.0005));
+let s=model.getAttribute("scale");
+model.setAttribute("scale",
+(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
 }
 
 </script>
