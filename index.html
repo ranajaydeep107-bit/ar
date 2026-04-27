@@ -7,42 +7,38 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <script>
-AFRAME.registerComponent('lock-after-detect', {
-  init: function () {
+AFRAME.registerComponent("lock-model",{
+init:function(){
 
-    let marker = this.el;
-    let model = document.querySelector('#model');
+let marker=this.el;
+let model=document.querySelector("#model");
 
-    marker.addEventListener('markerFound', () => {
+marker.addEventListener("markerFound",()=>{
 
-      const worldPos = new THREE.Vector3();
-      const worldRot = new THREE.Euler();
+let pos=new THREE.Vector3();
+marker.object3D.getWorldPosition(pos);
 
-      marker.object3D.getWorldPosition(worldPos);
-      worldRot.copy(marker.object3D.rotation);
+model.object3D.position.copy(pos);
+model.setAttribute("visible",true);
 
-      model.object3D.position.copy(worldPos);
-      model.object3D.rotation.copy(worldRot);
+marker.setAttribute("visible",false);
 
-      model.setAttribute('visible', true);
-
-      marker.setAttribute('visible', false);
-    });
-  }
+});
+}
 });
 </script>
+
 </head>
 
-<body style="margin:0; overflow:hidden;">
+<body style="margin:0">
 
-<a-scene embedded arjs>
+<a-scene embedded arjs="sourceType: webcam;">
 
-<a-marker preset="hiro" lock-after-detect>
-</a-marker>
+<a-marker preset="hiro" lock-model></a-marker>
 
 <a-entity
 id="model"
-gltf-model="1.glb"
+gltf-model="./1.glb"
 scale="1 1 1"
 visible="false">
 </a-entity>
