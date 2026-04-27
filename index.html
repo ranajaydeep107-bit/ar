@@ -1,141 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+<style>
+body{
+margin:0;
+overflow:hidden;
+}
+
+/* ---------- UI ---------- */
+
+.controls{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+z-index:999;
+}
+
+button{
+padding:12px;
+margin:4px;
+font-size:16px;
+border:none;
+border-radius:8px;
+background:black;
+color:white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= UI BUTTONS ================= -->
+
+<div class="controls">
+<button onclick="toggleFix()">Fix</button>
+<button onclick="scaleUp()">Size +</button>
+<button onclick="scaleDown()">Size -</button>
+</div>
+
+<!-- ================= AR SCENE ================= -->
+
+<a-scene
+embedded
+renderer="logarithmicDepthBuffer:true;"
+vr-mode-ui="enabled:false"
+arjs="trackingMethod:best; sourceType:webcam; debugUIEnabled:false;">
+
+<a-marker preset="hiro" id="marker">
+
+<a-entity
+id="model"
+gltf-model="1.glb"
+scale="0.5 0.5 0.5"
+position="0 0 0"
+rotation="-90 0 0">
+</a-entity>
+
+</a-marker>
+
+<a-entity camera></a-entity>
+
+</a-scene>
+
+<!-- ================= SCRIPT ================= -->
+
 <script>
 
 let model = document.querySelector("#model");
 let marker = document.querySelector("#marker");
 
-let fixed = false;
+let fixed=false;
+let scaleValue=0.5;
 
-/* ================================
-   FIX / UNFIX MODEL
-================================ */
+/* ================= FIX / UNFIX ================= */
 
 function toggleFix(){
-    fixed = !fixed;
-    alert(fixed ? "Model Fixed" : "Model Following Marker");
+fixed=!fixed;
+alert(fixed ? "Model Fixed" : "Model Follow Marker");
 }
 
-marker.addEventListener("markerFound",()=>{
-    if(!fixed) model.object3D.visible=true;
-});
-
 marker.addEventListener("markerLost",()=>{
-    if(fixed){
-        model.object3D.visible=true;
-    }
+if(fixed){
+model.object3D.visible=true;
+}
 });
 
-/* ================================
-   BUTTON CONTROLS (EXACT SCALE)
-================================ */
-
-let scaleValue = 0.5;
+/* ================= EXACT SCALE ================= */
 
 function scaleUp(){
-    scaleValue += 0.1;
-    model.setAttribute("scale",
-        scaleValue+" "+scaleValue+" "+scaleValue);
+scaleValue+=0.1;
+applyScale();
 }
 
 function scaleDown(){
-    scaleValue -= 0.1;
-    if(scaleValue < 0.1) scaleValue=0.1;
-
-    model.setAttribute("scale",
-        scaleValue+" "+scaleValue+" "+scaleValue);
+scaleValue-=0.1;
+if(scaleValue<0.1) scaleValue=0.1;
+applyScale();
 }
 
-/* ================================
-   TOUCH CONTROLS
-================================ */
-
-let startX, startY;
-let startDistance = null;
-let startRotation = null;
-
-/* ---- Distance Between Fingers ---- */
-
-function getDistance(touches){
-    let dx = touches[0].clientX - touches[1].clientX;
-    let dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx*dx + dy*dy);
+function applyScale(){
+model.setAttribute("scale",
+scaleValue+" "+scaleValue+" "+scaleValue);
 }
 
-/* ---- Angle Between Fingers ---- */
+/* ================= TOUCH CONTROLS ================= */
 
-function getAngle(touches){
-    let dx = touches[1].clientX - touches[0].clientX;
-    let dy = touches[1].clientY - touches[0].clientY;
-    return Math.atan2(dy,dx)*180/Math.PI;
+let startX,startY;
+let startDistance=null;
+let startAngle=null;
+
+/* ----- helpers ----- */
+
+function distance(t){
+let dx=t[0].clientX-t[1].clientX;
+let dy=t[0].clientY-t[1].clientY;
+return Math.sqrt(dx*dx+dy*dy);
 }
 
-/* ================================
-   TOUCH START
-================================ */
+function angle(t){
+let dx=t[1].clientX-t[0].clientX;
+let dy=t[1].clientY-t[0].clientY;
+return Math.atan2(dy,dx)*180/Math.PI;
+}
+
+/* ================= TOUCH START ================= */
 
 document.addEventListener("touchstart",(e)=>{
 
-    if(e.touches.length==1){
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-    }
+if(e.touches.length==1){
+startX=e.touches[0].clientX;
+startY=e.touches[0].clientY;
+}
 
-    if(e.touches.length==2){
-        startDistance = getDistance(e.touches);
-        startRotation = getAngle(e.touches);
-    }
+if(e.touches.length==2){
+startDistance=distance(e.touches);
+startAngle=angle(e.touches);
+}
 
 });
 
-/* ================================
-   TOUCH MOVE
-================================ */
+/* ================= TOUCH MOVE ================= */
 
 document.addEventListener("touchmove",(e)=>{
 
-    /* -------- MOVE MODEL (X,Y) -------- */
-    if(e.touches.length==1){
+/* ---------- MOVE (X,Y) ---------- */
+if(e.touches.length==1){
 
-        let dx = e.touches[0].clientX - startX;
-        let dy = e.touches[0].clientY - startY;
+let dx=e.touches[0].clientX-startX;
+let dy=e.touches[0].clientY-startY;
 
-        let pos = model.getAttribute("position");
+let pos=model.getAttribute("position");
 
-        model.setAttribute("position",
-            (pos.x + dx*0.001)+" "+
-            (pos.y - dy*0.001)+" "+
-            pos.z);
+model.setAttribute("position",
+(pos.x+dx*0.001)+" "+
+(pos.y-dy*0.001)+" "+
+pos.z);
 
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-    }
+startX=e.touches[0].clientX;
+startY=e.touches[0].clientY;
+}
 
-    /* -------- PINCH ZOOM + ROTATE -------- */
-    if(e.touches.length==2){
+/* ---------- PINCH ZOOM + ROTATE ---------- */
+if(e.touches.length==2){
 
-        let newDistance = getDistance(e.touches);
-        let newAngle = getAngle(e.touches);
+/* ZOOM */
+let newDistance=distance(e.touches);
+let change=(newDistance-startDistance)*0.002;
 
-        /* ZOOM */
-        let scaleChange = (newDistance - startDistance)*0.002;
-        scaleValue += scaleChange;
+scaleValue+=change;
+if(scaleValue<0.1) scaleValue=0.1;
 
-        if(scaleValue<0.1) scaleValue=0.1;
+applyScale();
+startDistance=newDistance;
 
-        model.setAttribute("scale",
-            scaleValue+" "+scaleValue+" "+scaleValue);
+/* ROTATE */
+let newAngle=angle(e.touches);
+let rot=model.getAttribute("rotation");
 
-        startDistance = newDistance;
+model.setAttribute("rotation",
+rot.x+" "+(rot.y+(newAngle-startAngle))+" "+rot.z);
 
-        /* ROTATE */
-        let rot = model.getAttribute("rotation");
-        let angleDiff = newAngle - startRotation;
-
-        model.setAttribute("rotation",
-            rot.x+" "+(rot.y+angleDiff)+" "+rot.z);
-
-        startRotation = newAngle;
-    }
+startAngle=newAngle;
+}
 
 });
 
 </script>
+
+</body>
+</html>
