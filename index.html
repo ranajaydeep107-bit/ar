@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AR Model</title>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 </head>
 
-<body>
+<body style="margin:0; overflow:hidden;">
 
-<h2>Open AR Model</h2>
+<a-scene embedded arjs>
 
-<a rel="ar" href="new.glb">
-Tap here to open AR
-</a>
+<a-marker preset="hiro">
+<a-entity
+gltf-model="new.glb"
+scale="0.5 0.5 0.5">
+</a-entity>
+</a-marker>
+
+<a-entity camera></a-entity>
+
+</a-scene>
 
 </body>
 </html>
