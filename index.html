@@ -16,36 +16,31 @@ background:black;
 font-family:sans-serif;
 }
 
+.ui{
+position:fixed;
+bottom:15px;
+width:100%;
+text-align:center;
+z-index:10;
+}
+
+button{
+padding:12px 18px;
+margin:6px;
+font-size:15px;
+border-radius:12px;
+border:none;
+background:white;
+}
+
 .title{
 position:fixed;
-top:10px;
+top:15px;
 width:100%;
 text-align:center;
 color:white;
 font-size:18px;
-z-index:20;
-}
-
-/* AR CONTROL PANEL */
-
-.ui{
-position:fixed;
-bottom:10px;
-left:50%;
-transform:translateX(-50%);
-z-index:20;
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-}
-
-button{
-padding:10px 14px;
-margin:4px;
-font-size:14px;
-border-radius:10px;
-border:none;
-background:white;
+z-index:10;
 }
 
 </style>
@@ -55,7 +50,7 @@ background:white;
 <body>
 
 <div class="title">
-ARCHITECTURE AR STUDIO
+ARCHITECTURE AR VIEW
 </div>
 
 <model-viewer
@@ -67,79 +62,34 @@ camera-controls
 shadow-intensity="1"
 environment-image="neutral"
 exposure="1"
+auto-rotate
 style="width:100vw;height:100vh;"
 ></model-viewer>
-
-<!-- CONTROL BUTTONS (VISIBLE EVEN IN AR) -->
 
 <div class="ui">
 
 <button onclick="startAR()">ENTER AR</button>
-
-<button onclick="realScale()">REAL SIZE</button>
-<button onclick="miniScale()">TABLE SIZE</button>
-
-<button onclick="rotateLeft()">↺</button>
-<button onclick="rotateRight()">↻</button>
-
-<button onclick="heightUp()">⬆ HEIGHT</button>
-<button onclick="heightDown()">⬇ HEIGHT</button>
-
+<button onclick="realScale()">REAL SCALE</button>
+<button onclick="miniScale()">TABLE SCALE</button>
 <button onclick="reset()">RESET</button>
 
 </div>
 
 <script>
 
-const viewer = document.querySelector("#viewer");
-
-/* ---------- ENTER AR ---------- */
+const viewer=document.querySelector("#viewer");
 
 function startAR(){
 viewer.activateAR();
 }
 
-/* ---------- SCALE CONTROL ---------- */
-
 function realScale(){
-viewer.scale = "25 25 25";   // adjust real building scale
+viewer.scale="20 20 20"; // adjust to building size
 }
 
 function miniScale(){
-viewer.scale = "1 1 1";
+viewer.scale="1 1 1";
 }
-
-/* ---------- ROTATION (BUILDING DIRECTION) ---------- */
-
-let rotationY = 0;
-
-function rotateLeft(){
-rotationY -= 15;
-viewer.orientation = `0deg ${rotationY}deg 0deg`;
-}
-
-function rotateRight(){
-rotationY += 15;
-viewer.orientation = `0deg ${rotationY}deg 0deg`;
-}
-
-/* ---------- HEIGHT FROM GROUND ---------- */
-
-let height = 0;
-
-function heightUp(){
-height += 0.2;
-viewer.style.transform =
-`translateY(-${height*50}px)`;
-}
-
-function heightDown(){
-height -= 0.2;
-viewer.style.transform =
-`translateY(-${height*50}px)`;
-}
-
-/* ---------- RESET ---------- */
 
 function reset(){
 location.reload();
