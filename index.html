@@ -1,124 +1,149 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>AR Architecture Viewer</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 
-<!-- A-Frame -->
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-
-<!-- AR.js -->
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<script type="module"
+src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
 
 <style>
+
 body{
 margin:0;
-overflow:hidden;
-font-family:Arial;
+background:black;
+font-family:sans-serif;
 }
 
-/* START BUTTON */
-#startButton{
+.title{
 position:fixed;
-bottom:40px;
-left:50%;
-transform:translateX(-50%);
-padding:15px 25px;
+top:10px;
+width:100%;
+text-align:center;
+color:white;
 font-size:18px;
-background:#000;
-color:#fff;
-border:none;
-border-radius:10px;
-z-index:999;
+z-index:20;
 }
 
-/* LOADING TEXT */
-#loading{
+/* AR CONTROL PANEL */
+
+.ui{
 position:fixed;
-top:20px;
+bottom:10px;
 left:50%;
 transform:translateX(-50%);
-background:#000;
-color:#fff;
-padding:8px 15px;
-border-radius:8px;
-z-index:999;
+z-index:20;
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
 }
+
+button{
+padding:10px 14px;
+margin:4px;
+font-size:14px;
+border-radius:10px;
+border:none;
+background:white;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<button id="startButton">START AR</button>
-<div id="loading">Loading Model...</div>
+<div class="title">
+ARCHITECTURE AR STUDIO
+</div>
 
-<a-scene
-embedded
-vr-mode-ui="enabled:false"
-renderer="logarithmicDepthBuffer:true;"
-arjs="trackingMethod: best;
-sourceType: webcam;
-debugUIEnabled:false;">
+<model-viewer
+id="viewer"
+src="building.glb"
+ar
+ar-modes="webxr scene-viewer quick-look"
+camera-controls
+shadow-intensity="1"
+environment-image="neutral"
+exposure="1"
+style="width:100vw;height:100vh;"
+></model-viewer>
 
-<!-- PRELOAD MODEL -->
-<a-assets timeout="10000">
-<a-asset-item id="model"
-src="model.glb">
-</a-asset-item>
-</a-assets>
+<!-- CONTROL BUTTONS (VISIBLE EVEN IN AR) -->
 
-<!-- MARKER -->
-<a-marker
-type="pattern"
-url="pattern-marker.patt"
-smooth="true"
-smoothCount="10"
-smoothTolerance="0.01"
-smoothThreshold="5">
+<div class="ui">
 
-<a-entity
-id="building"
-gltf-model="#model"
-scale="1 1 1"
-rotation="0 0 0"
-position="0 0 0">
-</a-entity>
+<button onclick="startAR()">ENTER AR</button>
 
-</a-marker>
+<button onclick="realScale()">REAL SIZE</button>
+<button onclick="miniScale()">TABLE SIZE</button>
 
-<a-entity camera></a-entity>
+<button onclick="rotateLeft()">↺</button>
+<button onclick="rotateRight()">↻</button>
 
-</a-scene>
+<button onclick="heightUp()">⬆ HEIGHT</button>
+<button onclick="heightDown()">⬇ HEIGHT</button>
+
+<button onclick="reset()">RESET</button>
+
+</div>
 
 <script>
 
-const startBtn = document.getElementById("startButton");
-const loading = document.getElementById("loading");
+const viewer = document.querySelector("#viewer");
 
-loading.style.display="none";
+/* ---------- ENTER AR ---------- */
 
-/* START AR */
-startBtn.addEventListener("click", async ()=>{
-
-try{
-
-await navigator.mediaDevices.getUserMedia({video:true});
-
-startBtn.style.display="none";
-loading.style.display="block";
-
-/* hide loading after model load */
-setTimeout(()=>{
-loading.style.display="none";
-},3000);
-
-}catch(e){
-alert("Camera permission required");
+function startAR(){
+viewer.activateAR();
 }
 
-});
+/* ---------- SCALE CONTROL ---------- */
+
+function realScale(){
+viewer.scale = "25 25 25";   // adjust real building scale
+}
+
+function miniScale(){
+viewer.scale = "1 1 1";
+}
+
+/* ---------- ROTATION (BUILDING DIRECTION) ---------- */
+
+let rotationY = 0;
+
+function rotateLeft(){
+rotationY -= 15;
+viewer.orientation = `0deg ${rotationY}deg 0deg`;
+}
+
+function rotateRight(){
+rotationY += 15;
+viewer.orientation = `0deg ${rotationY}deg 0deg`;
+}
+
+/* ---------- HEIGHT FROM GROUND ---------- */
+
+let height = 0;
+
+function heightUp(){
+height += 0.2;
+viewer.style.transform =
+`translateY(-${height*50}px)`;
+}
+
+function heightDown(){
+height -= 0.2;
+viewer.style.transform =
+`translateY(-${height*50}px)`;
+}
+
+/* ---------- RESET ---------- */
+
+function reset(){
+location.reload();
+}
 
 </script>
 
