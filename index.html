@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
 
-<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+<meta charset="UTF-8">
+
+<script type="module"
+src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
 
 <style>
 
 body{
 margin:0;
-overflow:hidden;
+background:black;
 }
 
 .controls{
 position:fixed;
 bottom:20px;
-left:50%;
-transform:translateX(-50%);
-z-index:999;
+width:100%;
 text-align:center;
+z-index:10;
 }
 
 button{
-padding:10px;
-margin:3px;
-font-size:14px;
+padding:12px;
+margin:5px;
+font-size:16px;
 border:none;
-border-radius:8px;
-background:black;
-color:white;
+border-radius:10px;
+background:white;
 }
 
 </style>
@@ -37,151 +37,47 @@ color:white;
 
 <body>
 
-<!-- ================= CONTROL BUTTONS ================= -->
+<!-- PROFESSIONAL AR VIEWER -->
+
+<model-viewer
+id="viewer"
+src="1.glb"
+ar
+ar-modes="webxr scene-viewer quick-look"
+camera-controls
+auto-rotate
+shadow-intensity="1"
+scale="1 1 1"
+style="width:100vw;height:100vh;"
+></model-viewer>
 
 <div class="controls">
 
-<button onclick="zoomIn()">Zoom +</button>
-<button onclick="zoomOut()">Zoom -</button>
-
-<br>
-
-<button onclick="scaleUp()">Size +</button>
-<button onclick="scaleDown()">Size -</button>
-
-<br>
-
-<!-- Y Rotation -->
-<button onclick="rotateLeft()">⟲ Y</button>
-<button onclick="rotateRight()">⟳ Y</button>
-
-<br>
-
-<!-- X Axis -->
-<button onclick="rotXPlus()">X+</button>
-<button onclick="rotXMinus()">X-</button>
-
-<!-- Z Axis -->
-<button onclick="rotZPlus()">Z+</button>
-<button onclick="rotZMinus()">Z-</button>
+<button onclick="enterAR()">START AR</button>
+<button onclick="realScale()">REAL SIZE</button>
+<button onclick="smallScale()">SMALL</button>
+<button onclick="removeModel()">REMOVE</button>
 
 </div>
 
-<!-- ================= AR SCENE ================= -->
-
-<a-scene
-embedded
-renderer="logarithmicDepthBuffer:true;"
-vr-mode-ui="enabled:false"
-arjs="trackingMethod:best; sourceType:webcam; debugUIEnabled:false;">
-
-<!-- HIRO MARKER -->
-
-<a-marker preset="hiro" id="marker">
-
-<a-entity
-id="model"
-gltf-model="1.glb"
-scale="0.5 0.5 0.5"
-position="0 0 0"
-rotation="-90 0 0">
-</a-entity>
-
-</a-marker>
-
-<a-entity camera></a-entity>
-
-</a-scene>
-
-<!-- ================= SCRIPT ================= -->
-
 <script>
 
-let model=document.querySelector("#model");
-let marker=document.querySelector("#marker");
+const viewer=document.querySelector("#viewer");
 
-let fixed=false;
-
-/* ---------- KEEP MODEL AFTER MARKER LOST ---------- */
-
-marker.addEventListener("markerFound",()=>{
-fixed=true;
-});
-
-marker.addEventListener("markerLost",()=>{
-if(fixed){
-model.object3D.visible=true;
-}
-});
-
-/* ---------- ZOOM ---------- */
-
-function zoomIn(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z-0.2));
+function enterAR(){
+viewer.activateAR();
 }
 
-function zoomOut(){
-let p=model.getAttribute("position");
-model.setAttribute("position",
-p.x+" "+p.y+" "+(p.z+0.2));
+function realScale(){
+viewer.scale="10 10 10"; // building size
 }
 
-/* ---------- Y ROTATION ---------- */
-
-function rotateLeft(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y-15)+" "+r.z);
+function smallScale(){
+viewer.scale="1 1 1";
 }
 
-function rotateRight(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+(r.y+15)+" "+r.z);
-}
-
-/* ---------- SCALE ---------- */
-
-function scaleUp(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x+0.1)+" "+(s.y+0.1)+" "+(s.z+0.1));
-}
-
-function scaleDown(){
-let s=model.getAttribute("scale");
-model.setAttribute("scale",
-(s.x-0.1)+" "+(s.y-0.1)+" "+(s.z-0.1));
-}
-
-/* ---------- X AXIS ROTATION ---------- */
-
-function rotXPlus(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-(r.x+15)+" "+r.y+" "+r.z);
-}
-
-function rotXMinus(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-(r.x-15)+" "+r.y+" "+r.z);
-}
-
-/* ---------- Z AXIS ROTATION ---------- */
-
-function rotZPlus(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+r.y+" "+(r.z+15));
-}
-
-function rotZMinus(){
-let r=model.getAttribute("rotation");
-model.setAttribute("rotation",
-r.x+" "+r.y+" "+(r.z-15));
+function removeModel(){
+viewer.style.display="none";
 }
 
 </script>
