@@ -13,65 +13,50 @@ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 body{
 margin:0;
 background:black;
-font-family:sans-serif;
 }
 
-.ui{
+.controls{
 position:fixed;
-bottom:15px;
+bottom:20px;
 width:100%;
 text-align:center;
 z-index:10;
 }
 
 button{
-padding:12px 18px;
-margin:6px;
-font-size:15px;
-border-radius:12px;
+padding:12px;
+margin:5px;
+font-size:16px;
 border:none;
+border-radius:10px;
 background:white;
 }
 
-.title{
-position:fixed;
-top:15px;
-width:100%;
-text-align:center;
-color:white;
-font-size:18px;
-z-index:10;
-}
-
 </style>
-
 </head>
 
 <body>
 
-<div class="title">
-ARCHITECTURE AR VIEW
-</div>
+<!-- PROFESSIONAL AR VIEWER -->
 
 <model-viewer
 id="viewer"
-src="building.glb"
+src="1.glb"
 ar
 ar-modes="webxr scene-viewer quick-look"
 camera-controls
-shadow-intensity="1"
-environment-image="neutral"
-exposure="1"
 auto-rotate
+shadow-intensity="1"
+scale="1 1 1"
 style="width:100vw;height:100vh;"
 ></model-viewer>
 
-<div class="ui">
+<div class="controls">
 
-<button onclick="startAR()">ENTER AR</button>
-<button onclick="realScale()">REAL SCALE</button>
-<button onclick="miniScale()">TABLE SCALE</button>
-<button onclick="reset()">RESET</button>
+<button onclick="enterAR()">START AR</button>
+<button onclick="realScale()">REAL SIZE</button>
+<button onclick="smallScale()">SMALL</button>
+<button onclick="removeModel()">REMOVE</button>
 
 </div>
 
@@ -79,20 +64,20 @@ style="width:100vw;height:100vh;"
 
 const viewer=document.querySelector("#viewer");
 
-function startAR(){
+function enterAR(){
 viewer.activateAR();
 }
 
 function realScale(){
-viewer.scale="20 20 20"; // adjust to building size
+viewer.scale="10 10 10"; // building size
 }
 
-function miniScale(){
+function smallScale(){
 viewer.scale="1 1 1";
 }
 
-function reset(){
-location.reload();
+function removeModel(){
+viewer.style.display="none";
 }
 
 </script>
