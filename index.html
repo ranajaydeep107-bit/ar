@@ -1,99 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
+<title>AR Architecture Viewer</title>
 
-<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script type="module"
-src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-</script>
+<!-- A-Frame -->
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+<!-- AR.js -->
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
 <style>
-
 body{
 margin:0;
-background:black;
-font-family:sans-serif;
+overflow:hidden;
+font-family:Arial;
 }
 
-.ui{
+/* START BUTTON */
+#startButton{
 position:fixed;
-bottom:15px;
-width:100%;
-text-align:center;
-z-index:10;
-}
-
-button{
-padding:12px 18px;
-margin:6px;
-font-size:15px;
-border-radius:12px;
-border:none;
-background:white;
-}
-
-.title{
-position:fixed;
-top:15px;
-width:100%;
-text-align:center;
-color:white;
+bottom:40px;
+left:50%;
+transform:translateX(-50%);
+padding:15px 25px;
 font-size:18px;
-z-index:10;
+background:#000;
+color:#fff;
+border:none;
+border-radius:10px;
+z-index:999;
 }
 
+/* LOADING TEXT */
+#loading{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+background:#000;
+color:#fff;
+padding:8px 15px;
+border-radius:8px;
+z-index:999;
+}
 </style>
-
 </head>
 
 <body>
 
-<div class="title">
-ARCHITECTURE AR VIEW
-</div>
+<button id="startButton">START AR</button>
+<div id="loading">Loading Model...</div>
 
-<model-viewer
-id="viewer"
-src="building.glb"
-ar
-ar-modes="webxr scene-viewer quick-look"
-camera-controls
-shadow-intensity="1"
-environment-image="neutral"
-exposure="1"
-auto-rotate
-style="width:100vw;height:100vh;"
-></model-viewer>
+<a-scene
+embedded
+vr-mode-ui="enabled:false"
+renderer="logarithmicDepthBuffer:true;"
+arjs="trackingMethod: best;
+sourceType: webcam;
+debugUIEnabled:false;">
 
-<div class="ui">
+<!-- PRELOAD MODEL -->
+<a-assets timeout="10000">
+<a-asset-item id="model"
+src="model.glb">
+</a-asset-item>
+</a-assets>
 
-<button onclick="startAR()">ENTER AR</button>
-<button onclick="realScale()">REAL SCALE</button>
-<button onclick="miniScale()">TABLE SCALE</button>
-<button onclick="reset()">RESET</button>
+<!-- MARKER -->
+<a-marker
+type="pattern"
+url="pattern-marker.patt"
+smooth="true"
+smoothCount="10"
+smoothTolerance="0.01"
+smoothThreshold="5">
 
-</div>
+<a-entity
+id="building"
+gltf-model="#model"
+scale="1 1 1"
+rotation="0 0 0"
+position="0 0 0">
+</a-entity>
+
+</a-marker>
+
+<a-entity camera></a-entity>
+
+</a-scene>
 
 <script>
 
-const viewer=document.querySelector("#viewer");
+const startBtn = document.getElementById("startButton");
+const loading = document.getElementById("loading");
 
-function startAR(){
-viewer.activateAR();
+loading.style.display="none";
+
+/* START AR */
+startBtn.addEventListener("click", async ()=>{
+
+try{
+
+await navigator.mediaDevices.getUserMedia({video:true});
+
+startBtn.style.display="none";
+loading.style.display="block";
+
+/* hide loading after model load */
+setTimeout(()=>{
+loading.style.display="none";
+},3000);
+
+}catch(e){
+alert("Camera permission required");
 }
 
-function realScale(){
-viewer.scale="20 20 20"; // adjust to building size
-}
-
-function miniScale(){
-viewer.scale="1 1 1";
-}
-
-function reset(){
-location.reload();
-}
+});
 
 </script>
 
