@@ -17,31 +17,34 @@ font-family:sans-serif;
 overflow:hidden;
 }
 
-.controls{
+/* ---------- START SCREEN ---------- */
+
+.startUI{
 position:fixed;
-bottom:15px;
+bottom:30px;
 width:100%;
 text-align:center;
 z-index:10;
 }
 
 button{
-padding:10px 14px;
-margin:4px;
-font-size:14px;
+padding:14px 18px;
+margin:6px;
+font-size:16px;
+border-radius:12px;
 border:none;
-border-radius:10px;
 background:white;
 }
 
-.title{
+/* ---------- AR CONTROLS (HIDDEN FIRST) ---------- */
+
+.arUI{
+display:none;
 position:fixed;
-top:15px;
+bottom:20px;
 width:100%;
 text-align:center;
-color:white;
-font-size:18px;
-z-index:10;
+z-index:20;
 }
 
 </style>
@@ -49,108 +52,114 @@ z-index:10;
 
 <body>
 
-<div class="title">ARCHITECTURE AR VIEW</div>
-
-<!-- ================= AR VIEWER ================= -->
+<!-- ================= MODEL VIEWER ================= -->
 
 <model-viewer
 id="viewer"
 src="1.glb"
-
 ar
 ar-modes="webxr scene-viewer quick-look"
-
-ar-placement="floor"
-ar-scale="fixed"
-
 camera-controls
-touch-action="pan-y"
-
+auto-rotate
 shadow-intensity="1"
 environment-image="neutral"
-exposure="1"
-
 style="width:100vw;height:100vh;">
 </model-viewer>
 
-<!-- ================= CONTROLS ================= -->
 
-<div class="controls">
+<!-- ================= START BUTTON ONLY ================= -->
 
-<button onclick="enterAR()">ENTER AR</button>
+<div class="startUI" id="startUI">
+<button onclick="startAR()">START AR</button>
+</div>
 
-<br>
+
+<!-- ================= AR CONTROLS ================= -->
+
+<div class="arUI" id="arUI">
 
 <button onclick="tableSize()">TABLE SIZE</button>
 <button onclick="realSize()">REAL SIZE</button>
-
 <br>
 
 <button onclick="rotateLeft()">⟲</button>
 <button onclick="rotateRight()">⟳</button>
-
 <br>
 
 <button onclick="heightUp()">HEIGHT +</button>
 <button onclick="heightDown()">HEIGHT -</button>
-
 <br>
 
-<button onclick="rePlace()">REPLACE</button>
+<button onclick="removeModel()">REMOVE</button>
 
 </div>
+
 
 <script>
 
 const viewer=document.querySelector("#viewer");
+const startUI=document.querySelector("#startUI");
+const arUI=document.querySelector("#arUI");
 
 let height=0;
-let rotation=0;
 
-/* ---------- ENTER AR ---------- */
+/* ================= ENTER AR ================= */
 
-function enterAR(){
+function startAR(){
 viewer.activateAR();
 }
 
-/* ---------- SCALE ---------- */
+/* SHOW BUTTONS ONLY AFTER AR STARTS */
+
+viewer.addEventListener("ar-status", (event)=>{
+if(event.detail.status==="session-started"){
+startUI.style.display="none";
+arUI.style.display="block";
+}
+});
+
+/* ================= SCALE ================= */
 
 function tableSize(){
 viewer.scale="1 1 1";
 }
 
 function realSize(){
-viewer.scale="12 12 12";   // adjust for real building
+viewer.scale="15 15 15"; // adjust building real size
 }
 
-/* ---------- ROTATION ---------- */
+/* ================= ROTATION ================= */
 
 function rotateLeft(){
-rotation-=15;
-viewer.orientation=`0deg ${rotation}deg 0deg`;
+viewer.cameraOrbit =
+`${viewer.getCameraOrbit().theta - 15}deg 
+${viewer.getCameraOrbit().phi}deg 
+${viewer.getCameraOrbit().radius}m`;
 }
 
 function rotateRight(){
-rotation+=15;
-viewer.orientation=`0deg ${rotation}deg 0deg`;
+viewer.cameraOrbit =
+`${viewer.getCameraOrbit().theta + 15}deg 
+${viewer.getCameraOrbit().phi}deg 
+${viewer.getCameraOrbit().radius}m`;
 }
 
-/* ---------- HEIGHT ADJUST ---------- */
+/* ================= HEIGHT CONTROL ================= */
 
 function heightUp(){
-height+=0.1;
-viewer.style.transform=`translateY(${-height*60}px)`;
+height += 0.1;
+viewer.style.transform=`translateY(-${height*100}px)`;
 }
 
 function heightDown(){
-height-=0.1;
-viewer.style.transform=`translateY(${-height*60}px)`;
+height -= 0.1;
+viewer.style.transform=`translateY(-${height*100}px)`;
 }
 
-/* ---------- REPLACE MODEL ---------- */
+/* ================= REMOVE ================= */
 
-function rePlace(){
-viewer.activateAR(); // lets user tap new surface
+function removeModel(){
+viewer.style.display="none";
 }
 
 </script>
