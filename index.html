@@ -13,23 +13,35 @@ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 body{
 margin:0;
 background:black;
+font-family:sans-serif;
+overflow:hidden;
 }
 
 .controls{
 position:fixed;
-bottom:20px;
+bottom:15px;
 width:100%;
 text-align:center;
 z-index:10;
 }
 
 button{
-padding:12px;
-margin:5px;
-font-size:16px;
+padding:10px 14px;
+margin:4px;
+font-size:14px;
 border:none;
 border-radius:10px;
 background:white;
+}
+
+.title{
+position:fixed;
+top:15px;
+width:100%;
+text-align:center;
+color:white;
+font-size:18px;
+z-index:10;
 }
 
 </style>
@@ -37,26 +49,54 @@ background:white;
 
 <body>
 
-<!-- PROFESSIONAL AR VIEWER -->
+<div class="title">ARCHITECTURE AR VIEW</div>
+
+<!-- ================= AR VIEWER ================= -->
 
 <model-viewer
 id="viewer"
 src="1.glb"
+
 ar
 ar-modes="webxr scene-viewer quick-look"
+
+ar-placement="floor"
+ar-scale="fixed"
+
 camera-controls
-auto-rotate
+touch-action="pan-y"
+
 shadow-intensity="1"
-scale="1 1 1"
-style="width:100vw;height:100vh;"
-></model-viewer>
+environment-image="neutral"
+exposure="1"
+
+style="width:100vw;height:100vh;">
+</model-viewer>
+
+<!-- ================= CONTROLS ================= -->
 
 <div class="controls">
 
-<button onclick="enterAR()">START AR</button>
-<button onclick="realScale()">REAL SIZE</button>
-<button onclick="smallScale()">SMALL</button>
-<button onclick="removeModel()">REMOVE</button>
+<button onclick="enterAR()">ENTER AR</button>
+
+<br>
+
+<button onclick="tableSize()">TABLE SIZE</button>
+<button onclick="realSize()">REAL SIZE</button>
+
+<br>
+
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
+
+<br>
+
+<button onclick="heightUp()">HEIGHT +</button>
+<button onclick="heightDown()">HEIGHT -</button>
+
+<br>
+
+<button onclick="rePlace()">REPLACE</button>
 
 </div>
 
@@ -64,20 +104,53 @@ style="width:100vw;height:100vh;"
 
 const viewer=document.querySelector("#viewer");
 
+let height=0;
+let rotation=0;
+
+/* ---------- ENTER AR ---------- */
+
 function enterAR(){
 viewer.activateAR();
 }
 
-function realScale(){
-viewer.scale="10 10 10"; // building size
-}
+/* ---------- SCALE ---------- */
 
-function smallScale(){
+function tableSize(){
 viewer.scale="1 1 1";
 }
 
-function removeModel(){
-viewer.style.display="none";
+function realSize(){
+viewer.scale="12 12 12";   // adjust for real building
+}
+
+/* ---------- ROTATION ---------- */
+
+function rotateLeft(){
+rotation-=15;
+viewer.orientation=`0deg ${rotation}deg 0deg`;
+}
+
+function rotateRight(){
+rotation+=15;
+viewer.orientation=`0deg ${rotation}deg 0deg`;
+}
+
+/* ---------- HEIGHT ADJUST ---------- */
+
+function heightUp(){
+height+=0.1;
+viewer.style.transform=`translateY(${-height*60}px)`;
+}
+
+function heightDown(){
+height-=0.1;
+viewer.style.transform=`translateY(${-height*60}px)`;
+}
+
+/* ---------- REPLACE MODEL ---------- */
+
+function rePlace(){
+viewer.activateAR(); // lets user tap new surface
 }
 
 </script>
