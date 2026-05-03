@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta charset="UTF-8">
 
 <script type="module"
 src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
@@ -13,39 +13,26 @@ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 body{
 margin:0;
 background:black;
-font-family:Arial;
+overflow:hidden;
+font-family:sans-serif;
 }
 
-/* AR Model */
-model-viewer{
-width:100%;
-height:100vh;
---progress-bar-color:white;
-}
+/* START BUTTON */
 
-/* Buttons */
-.controls{
+.startUI{
 position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-justify-content:center;
+bottom:40px;
+width:100%;
+text-align:center;
+z-index:10;
 }
 
 button{
-padding:10px 15px;
-font-size:14px;
+padding:16px 22px;
+font-size:18px;
+border-radius:12px;
 border:none;
-border-radius:8px;
-background:#ffffffcc;
-cursor:pointer;
-}
-
-button:active{
-background:#ddd;
+background:white;
 }
 
 </style>
@@ -53,95 +40,49 @@ background:#ddd;
 
 <body>
 
+<!-- MODEL VIEWER -->
+
 <model-viewer
-id="model"
-src="model.glb"
+id="viewer"
+src="1.glb"
+
 ar
-ar-modes="scene-viewer webxr quick-look"
-camera-controls
-auto-rotate
+ar-modes="webxr scene-viewer quick-look"
+
+placement="floor"
+interaction-prompt="auto"
+ar-scale="fixed"
+
 shadow-intensity="1"
-scale="0.3 0.3 0.3"
-camera-orbit="0deg 75deg 2m"
-interaction-prompt="auto">
+environment-image="neutral"
 
-<button slot="ar-button"
-style="background:white;
-border-radius:8px;
-padding:10px 20px;
-position:absolute;
-bottom:90px;
-left:50%;
-transform:translateX(-50%);">
-START AR
-</button>
+camera-controls="false"
 
+style="width:100vw;height:100vh;">
 </model-viewer>
 
-<!-- CONTROLS -->
-<div class="controls">
+<!-- ONLY BUTTON -->
 
-<button onclick="realSize()">Real Life</button>
-
-<button onclick="tableSize()">Table Model</button>
-
-<button onclick="scaleUp()">Scale +</button>
-
-<button onclick="scaleDown()">Scale -</button>
-
-<button onclick="heightUp()">Height +</button>
-
-<button onclick="heightDown()">Height -</button>
-
+<div class="startUI" id="startUI">
+<button onclick="startAR()">START AR</button>
 </div>
 
 <script>
 
-const model = document.getElementById("model");
+const viewer=document.querySelector("#viewer");
+const startUI=document.querySelector("#startUI");
 
-let scaleValue = 0.3;
-let heightValue = 0;
-
-function applyScale(){
-model.scale = `${scaleValue} ${scaleValue} ${scaleValue}`;
+function startAR(){
+viewer.activateAR();
 }
 
-/* REAL SIZE */
-function realSize(){
-scaleValue = 1;
-applyScale();
-}
+/* Hide button after AR starts */
 
-/* TABLE MODEL */
-function tableSize(){
-scaleValue = 0.25;
-applyScale();
+viewer.addEventListener("ar-status",(e)=>{
+if(e.detail.status==="session-started"){
+startUI.style.display="none";
 }
-
-/* SCALE */
-function scaleUp(){
-scaleValue += 0.05;
-applyScale();
-}
-
-function scaleDown(){
-scaleValue -= 0.05;
-if(scaleValue < 0.05) scaleValue = 0.05;
-applyScale();
-}
-
-/* HEIGHT */
-function heightUp(){
-heightValue += 0.05;
-model.style.transform =
-`translateY(${heightValue*100}px)`;
-}
-
-function heightDown(){
-heightValue -= 0.05;
-model.style.transform =
-`translateY(${heightValue*100}px)`;
-}
+});
 
 </script>
 
