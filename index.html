@@ -9,25 +9,45 @@ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
+
 body{
 margin:0;
 background:black;
 overflow:hidden;
+font-family:sans-serif;
 }
-</style>
 
+/* START BUTTON */
+
+.startUI{
+position:fixed;
+bottom:40px;
+width:100%;
+text-align:center;
+z-index:10;
+}
+
+button{
+padding:16px 22px;
+font-size:18px;
+border-radius:12px;
+border:none;
+background:white;
+}
+
+</style>
 </head>
 
 <body>
 
+<!-- MODEL VIEWER -->
+
 <model-viewer
+id="viewer"
 src="1.glb"
 
 ar
 ar-modes="webxr scene-viewer quick-look"
-
-camera-controls="false"
-auto-rotate="false"
 
 placement="floor"
 interaction-prompt="auto"
@@ -36,8 +56,35 @@ ar-scale="fixed"
 shadow-intensity="1"
 environment-image="neutral"
 
+camera-controls="false"
+
 style="width:100vw;height:100vh;">
 </model-viewer>
+
+<!-- ONLY BUTTON -->
+
+<div class="startUI" id="startUI">
+<button onclick="startAR()">START AR</button>
+</div>
+
+<script>
+
+const viewer=document.querySelector("#viewer");
+const startUI=document.querySelector("#startUI");
+
+function startAR(){
+viewer.activateAR();
+}
+
+/* Hide button after AR starts */
+
+viewer.addEventListener("ar-status",(e)=>{
+if(e.detail.status==="session-started"){
+startUI.style.display="none";
+}
+});
+
+</script>
 
 </body>
 </html>
