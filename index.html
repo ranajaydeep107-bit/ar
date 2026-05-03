@@ -1,66 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script type="module"
 src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
-
-<title>AR Model Viewer</title>
 
 <style>
 
 body{
 margin:0;
 background:black;
-font-family:Arial;
+font-family:sans-serif;
 overflow:hidden;
 }
 
-/* START SCREEN */
-#startScreen{
-position:fixed;
-width:100%;
-height:100%;
-background:black;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:10;
-}
-
-#startBtn{
-padding:15px 40px;
-font-size:18px;
-border-radius:10px;
-border:none;
-}
-
-/* MODEL */
-model-viewer{
+/* MODEL hidden at start */
+#viewer{
 width:100vw;
 height:100vh;
 display:none;
 }
 
-/* CONTROL PANEL */
-#controls{
+/* START SCREEN */
+.startUI{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+text-align:center;
+}
+
+.startUI button{
+padding:18px 30px;
+font-size:20px;
+border-radius:12px;
+border:none;
+background:white;
+}
+
+/* AR CONTROLS */
+.controls{
 position:fixed;
 bottom:20px;
 width:100%;
 text-align:center;
-z-index:9999;
+z-index:10;
 display:none;
 }
 
 button{
-padding:12px 18px;
+padding:12px;
 margin:5px;
 font-size:15px;
-border-radius:8px;
 border:none;
+border-radius:10px;
+background:white;
 }
 
 </style>
@@ -68,108 +65,106 @@ border:none;
 
 <body>
 
-<!-- START SCREEN -->
-<div id="startScreen">
-<button id="startBtn">START AR</button>
+<!-- START BUTTON ONLY -->
+<div class="startUI" id="startUI">
+<button onclick="startAR()">START AR</button>
 </div>
 
-<!-- MODEL -->
+<!-- MODEL VIEWER -->
 <model-viewer
 id="viewer"
-src="model.glb"
+src="1.glb"
 ar
-ar-modes="webxr scene-viewer quick-look"
+ar-modes="webxr"
 camera-controls
-auto-rotate
-shadow-intensity="1"
-scale="1 1 1">
+environment-image="neutral"
+shadow-intensity="1">
 </model-viewer>
 
-<!-- CONTROL BUTTONS -->
-<div id="controls">
+<!-- AR BUTTONS (appear AFTER AR starts) -->
+<div class="controls" id="controls">
 
-<button onclick="realLife()">Real Size</button>
-<button onclick="tableTop()">Table Mode</button>
+<button onclick="realSize()">REAL SIZE</button>
+<button onclick="tableSize()">TABLE SIZE</button>
 
 <br>
 
-<button onclick="zoomIn()">Zoom +</button>
-<button onclick="zoomOut()">Zoom -</button>
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
 
-<button onclick="moveUp()">Height +</button>
-<button onclick="moveDown()">Height -</button>
+<br>
 
-<button onclick="rotate()">Rotate</button>
-<button onclick="reset()">Reset</button>
+<button onclick="heightUp()">HEIGHT +</button>
+<button onclick="heightDown()">HEIGHT -</button>
+
+<br>
+
+<button onclick="resetModel()">REPLACE</button>
 
 </div>
 
 <script>
 
-const viewer = document.getElementById("viewer");
-const startBtn = document.getElementById("startBtn");
-const startScreen = document.getElementById("startScreen");
-const controls = document.getElementById("controls");
+const viewer=document.getElementById("viewer");
+const startUI=document.getElementById("startUI");
+const controls=document.getElementById("controls");
+
+let scale=1;
+let rotation=0;
+let height=0;
 
 /* START AR */
-startBtn.onclick = () => {
-startScreen.style.display="none";
+function startAR(){
+
+startUI.style.display="none";
 viewer.style.display="block";
+
 viewer.activateAR();
-};
 
-/* SHOW BUTTONS AFTER CAMERA START */
-viewer.addEventListener("ar-status", (event)=>{
-if(event.detail.status==="session-started"){
+/* show buttons after camera opens */
+setTimeout(()=>{
 controls.style.display="block";
-}
-});
+},2000);
 
-/* SCALE MODES */
-
-function realLife(){
-viewer.scale = "1 1 1";
 }
 
-function tableTop(){
-viewer.scale = "0.2 0.2 0.2";
+/* SCALE */
+function realSize(){
+scale=20;
+viewer.scale=`${scale} ${scale} ${scale}`;
 }
 
-/* ZOOM */
-function zoomIn(){
-viewer.cameraOrbit="0deg 75deg 1m";
-}
-
-function zoomOut(){
-viewer.cameraOrbit="0deg 75deg 3m";
-}
-
-/* HEIGHT CONTROL */
-let height = 0;
-
-function moveUp(){
-height += 0.1;
-viewer.style.transform =
-`translateY(-${height*50}px)`;
-}
-
-function moveDown(){
-height -= 0.1;
-viewer.style.transform =
-`translateY(-${height*50}px)`;
+function tableSize(){
+scale=1;
+viewer.scale=`${scale} ${scale} ${scale}`;
 }
 
 /* ROTATION */
-function rotate(){
-viewer.autoRotate = !viewer.autoRotate;
+function rotateLeft(){
+rotation-=15;
+viewer.orientation=`0deg ${rotation}deg 0deg`;
 }
 
-/* RESET */
-function reset(){
-viewer.cameraOrbit="0deg 75deg 2m";
-viewer.scale="1 1 1";
-viewer.style.transform="translateY(0px)";
-height = 0;
+function rotateRight(){
+rotation+=15;
+viewer.orientation=`0deg ${rotation}deg 0deg`;
+}
+
+/* HEIGHT CONTROL */
+function heightUp(){
+height+=0.1;
+viewer.style.transform=`translateY(-${height}m)`;
+}
+
+function heightDown(){
+height-=0.1;
+viewer.style.transform=`translateY(-${height}m)`;
+}
+
+/* RESET MODEL */
+function resetModel(){
+viewer.dismissPoster();
+viewer.activateAR();
 }
 
 </script>
