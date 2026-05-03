@@ -2,86 +2,90 @@
 <html>
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<script type="module"
-src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-</script>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
 <style>
-
-body{
-margin:0;
-background:black;
-overflow:hidden;
-font-family:sans-serif;
-}
-
-/* START BUTTON */
-
-.startUI{
+body{margin:0;overflow:hidden;}
+#start{
 position:fixed;
 bottom:40px;
 width:100%;
 text-align:center;
 z-index:10;
 }
-
 button{
 padding:16px 22px;
 font-size:18px;
-border-radius:12px;
 border:none;
+border-radius:12px;
 background:white;
 }
-
 </style>
+
 </head>
 
 <body>
 
-<!-- MODEL VIEWER -->
-
-<model-viewer
-id="viewer"
-src="1.glb"
-
-ar
-ar-modes="webxr scene-viewer quick-look"
-
-placement="floor"
-interaction-prompt="auto"
-ar-scale="fixed"
-
-shadow-intensity="1"
-environment-image="neutral"
-
-camera-controls="false"
-
-style="width:100vw;height:100vh;">
-</model-viewer>
-
-<!-- ONLY BUTTON -->
-
-<div class="startUI" id="startUI">
-<button onclick="startAR()">START AR</button>
+<div id="start">
+<button onclick="enterAR()">START AR</button>
 </div>
+
+<a-scene
+id="scene"
+renderer="logarithmicDepthBuffer:true;"
+xr-mode-ui="enabled:false"
+webxr="requiredFeatures: hit-test,local-floor">
+
+<a-camera></a-camera>
+
+<!-- MODEL -->
+<a-entity
+id="model"
+gltf-model="1.glb"
+visible="false"
+scale="1 1 1">
+</a-entity>
+
+</a-scene>
 
 <script>
 
-const viewer=document.querySelector("#viewer");
-const startUI=document.querySelector("#startUI");
+let placed=false;
 
-function startAR(){
-viewer.activateAR();
+const scene=document.querySelector("#scene");
+const model=document.querySelector("#model");
+const start=document.querySelector("#start");
+
+function enterAR(){
+
+scene.enterVR(); // start WebXR AR
+
+start.style.display="none";
+
 }
 
-/* Hide button after AR starts */
+/* TAP TO PLACE ON REAL SURFACE */
 
-viewer.addEventListener("ar-status",(e)=>{
-if(e.detail.status==="session-started"){
-startUI.style.display="none";
+scene.addEventListener("click",function(){
+
+if(!placed){
+
+const cam=document.querySelector("a-camera");
+
+model.object3D.position.copy(
+cam.object3D.position
+);
+
+model.object3D.position.z -= 2;
+
+model.setAttribute("visible",true);
+
+placed=true;
+
 }
+
 });
 
 </script>
