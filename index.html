@@ -8,25 +8,34 @@
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
-body{margin:0;overflow:hidden;}
 
+body{
+margin:0;
+overflow:hidden;
+font-family:sans-serif;
+}
+
+/* CENTERED BUTTON PANEL */
 .controls{
 position:fixed;
 bottom:15px;
-width:100%;
-text-align:center;
+left:50%;
+transform:translateX(-50%);
 z-index:999;
+text-align:center;
+white-space:nowrap;
 }
 
 button{
-padding:12px;
-margin:4px;
-font-size:15px;
-border-radius:10px;
+padding:10px 14px;
+margin:3px;
+font-size:14px;
 border:none;
+border-radius:8px;
 background:black;
 color:white;
 }
+
 </style>
 
 </head>
@@ -35,28 +44,28 @@ color:white;
 
 <div class="controls">
 
-<button onclick="place()">PLACE</button>
-<button onclick="real()">REAL SIZE</button>
-<button onclick="table()">TABLE SIZE</button>
+<button onclick="placeModel()">PLACE</button>
+<button onclick="realSize()">REAL</button>
+<button onclick="tableSize()">TABLE</button>
 
-<button onclick="rotateL()">↺</button>
-<button onclick="rotateR()">↻</button>
+<button onclick="rotateLeft()">⟲</button>
+<button onclick="rotateRight()">⟳</button>
 
-<button onclick="up()">⬆</button>
-<button onclick="down()">⬇</button>
+<button onclick="moveUp()">⬆</button>
+<button onclick="moveDown()">⬇</button>
 
 <button onclick="removeModel()">REMOVE</button>
 
 </div>
 
-
 <a-scene
 embedded
 vr-mode-ui="enabled:false"
 renderer="logarithmicDepthBuffer:true;"
-arjs="sourceType:webcam;debugUIEnabled:false;">
+arjs="trackingMethod:best;sourceType:webcam;debugUIEnabled:false;">
 
-<a-marker preset="hiro" id="marker"></a-marker>
+<!-- MARKER -->
+<a-marker preset="hiro" id="marker">
 
 <a-entity
 id="model"
@@ -66,75 +75,106 @@ rotation="-90 0 0"
 visible="false">
 </a-entity>
 
+</a-marker>
+
 <a-entity camera></a-entity>
 
 </a-scene>
 
 <script>
 
-const model=document.querySelector("#model");
 const marker=document.querySelector("#marker");
+const model=document.querySelector("#model");
 
 let placed=false;
-let rot=0;
-let scale=0.5;
+let rotationY=0;
+let scaleValue=0.5;
 
-/* ===== PLACE MODEL IN WORLD ===== */
+/* ===========================
+   PLACE MODEL
+=========================== */
 
-function place(){
-
-if(!placed){
-
-let pos=marker.object3D.position;
-let rotm=marker.object3D.rotation;
-
-model.object3D.position.copy(pos);
-model.object3D.rotation.copy(rotm);
+function placeModel(){
 
 model.setAttribute("visible",true);
 placed=true;
-}
-}
 
-/* ===== SCALE ===== */
-
-function real(){
-scale=8;
-model.setAttribute("scale",`${scale} ${scale} ${scale}`);
 }
 
-function table(){
-scale=0.5;
-model.setAttribute("scale",`${scale} ${scale} ${scale}`);
+/* ===========================
+   KEEP MODEL AFTER MARKER LOST
+=========================== */
+
+marker.addEventListener("markerLost",()=>{
+
+if(placed){
+
+model.object3D.position.copy(
+marker.object3D.position
+);
+
+model.object3D.rotation.copy(
+marker.object3D.rotation
+);
+
+document.querySelector("a-scene")
+.appendChild(model);
+
 }
 
-/* ===== ROTATION ===== */
+});
 
-function rotateL(){
-rot-=15;
-model.setAttribute("rotation",`-90 ${rot} 0`);
+/* ===========================
+   SCALE
+=========================== */
+
+function realSize(){
+scaleValue=8;
+model.setAttribute("scale",
+`${scaleValue} ${scaleValue} ${scaleValue}`);
 }
 
-function rotateR(){
-rot+=15;
-model.setAttribute("rotation",`-90 ${rot} 0`);
+function tableSize(){
+scaleValue=0.5;
+model.setAttribute("scale",
+`${scaleValue} ${scaleValue} ${scaleValue}`);
 }
 
-/* ===== HEIGHT ===== */
+/* ===========================
+   ROTATION
+=========================== */
 
-function up(){
+function rotateLeft(){
+rotationY-=15;
+model.setAttribute("rotation",
+`-90 ${rotationY} 0`);
+}
+
+function rotateRight(){
+rotationY+=15;
+model.setAttribute("rotation",
+`-90 ${rotationY} 0`);
+}
+
+/* ===========================
+   HEIGHT
+=========================== */
+
+function moveUp(){
 let p=model.getAttribute("position");
 model.setAttribute("position",
 `${p.x} ${p.y+0.2} ${p.z}`);
 }
 
-function down(){
+function moveDown(){
 let p=model.getAttribute("position");
 model.setAttribute("position",
 `${p.x} ${p.y-0.2} ${p.z}`);
 }
 
-/* ===== REMOVE ===== */
+/* ===========================
+   REMOVE
+=========================== */
 
 function removeModel(){
 model.setAttribute("visible",false);
