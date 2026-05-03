@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
 <style>
 body{margin:0;overflow:hidden;}
@@ -15,7 +15,7 @@ position:fixed;
 bottom:15px;
 width:100%;
 text-align:center;
-z-index:10;
+z-index:999;
 }
 
 button{
@@ -35,99 +35,108 @@ color:white;
 
 <div class="controls">
 
-<button onclick="placeModel()">PLACE</button>
-<button onclick="realSize()">REAL</button>
-<button onclick="tableSize()">TABLE</button>
+<button onclick="place()">PLACE</button>
+<button onclick="real()">REAL SIZE</button>
+<button onclick="table()">TABLE SIZE</button>
 
-<button onclick="rotY(-15)">↺</button>
-<button onclick="rotY(15)">↻</button>
+<button onclick="rotateL()">↺</button>
+<button onclick="rotateR()">↻</button>
 
 <button onclick="up()">⬆</button>
 <button onclick="down()">⬇</button>
 
-<button onclick="remove()">REMOVE</button>
+<button onclick="removeModel()">REMOVE</button>
 
 </div>
 
 
 <a-scene
-webxr="requiredFeatures: hit-test,local-floor"
-renderer="colorManagement:true"
+embedded
 vr-mode-ui="enabled:false"
-xr-mode-ui="enabled:true">
+renderer="logarithmicDepthBuffer:true;"
+arjs="sourceType:webcam;debugUIEnabled:false;">
 
-<a-camera position="0 1.6 0"></a-camera>
+<a-marker preset="hiro" id="marker"></a-marker>
 
-<a-entity id="model"
+<a-entity
+id="model"
 gltf-model="1.glb"
-visible="false"
-scale="0.5 0.5 0.5">
+scale="0.5 0.5 0.5"
+rotation="-90 0 0"
+visible="false">
 </a-entity>
+
+<a-entity camera></a-entity>
 
 </a-scene>
 
 <script>
 
-let model=document.querySelector("#model");
+const model=document.querySelector("#model");
+const marker=document.querySelector("#marker");
 
 let placed=false;
 let rot=0;
-let height=0;
 let scale=0.5;
 
-/* PLACE MODEL ON REAL SURFACE */
+/* ===== PLACE MODEL IN WORLD ===== */
 
-function placeModel(){
+function place(){
 
-let cam=document.querySelector("a-camera");
+if(!placed){
 
-let pos=cam.object3D.position;
+let pos=marker.object3D.position;
+let rotm=marker.object3D.rotation;
 
-model.setAttribute("position",
-`${pos.x} ${pos.y-1} ${pos.z-2}`);
+model.object3D.position.copy(pos);
+model.object3D.rotation.copy(rotm);
 
 model.setAttribute("visible",true);
 placed=true;
 }
+}
 
-/* SCALE */
+/* ===== SCALE ===== */
 
-function realSize(){
+function real(){
 scale=8;
 model.setAttribute("scale",`${scale} ${scale} ${scale}`);
 }
 
-function tableSize(){
+function table(){
 scale=0.5;
 model.setAttribute("scale",`${scale} ${scale} ${scale}`);
 }
 
-/* ROTATE */
+/* ===== ROTATION ===== */
 
-function rotY(v){
-rot+=v;
-model.setAttribute("rotation",`0 ${rot} 0`);
+function rotateL(){
+rot-=15;
+model.setAttribute("rotation",`-90 ${rot} 0`);
 }
 
-/* HEIGHT */
+function rotateR(){
+rot+=15;
+model.setAttribute("rotation",`-90 ${rot} 0`);
+}
+
+/* ===== HEIGHT ===== */
 
 function up(){
-height+=0.2;
 let p=model.getAttribute("position");
 model.setAttribute("position",
 `${p.x} ${p.y+0.2} ${p.z}`);
 }
 
 function down(){
-height-=0.2;
 let p=model.getAttribute("position");
 model.setAttribute("position",
 `${p.x} ${p.y-0.2} ${p.z}`);
 }
 
-/* REMOVE */
+/* ===== REMOVE ===== */
 
-function remove(){
+function removeModel(){
 model.setAttribute("visible",false);
 placed=false;
 }
