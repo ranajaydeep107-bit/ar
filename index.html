@@ -1,171 +1,135 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Architecture AR Studio</title>
+<meta charset="utf-8">
 
-<!-- Model Viewer -->
-<script type="module"
-src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-</script>
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
+body{margin:0;overflow:hidden;}
 
-body{
-margin:0;
-font-family:Arial;
-background:black;
-overflow:hidden;
-}
-
-/* ---------- INTRO SCREEN ---------- */
-
-#intro{
+.controls{
 position:fixed;
+bottom:15px;
 width:100%;
-height:100%;
-background:#000;
-display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
+text-align:center;
 z-index:10;
 }
 
-h1{
-color:white;
-letter-spacing:4px;
-margin-bottom:40px;
-font-weight:300;
-}
-
-#startBtn{
-padding:18px 40px;
-font-size:18px;
-background:white;
-color:black;
+button{
+padding:12px;
+margin:4px;
+font-size:15px;
+border-radius:10px;
 border:none;
-border-radius:40px;
-cursor:pointer;
-}
-
-/* ---------- AR VIEW ---------- */
-
-model-viewer{
-width:100%;
-height:100vh;
-display:none;
-background:#000;
-}
-
-/* ---------- AR CONTROLS ---------- */
-
-#controls{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-display:none;
-gap:12px;
-z-index:5;
-}
-
-.btn{
-padding:12px 20px;
-background:rgba(0,0,0,0.6);
+background:black;
 color:white;
-border:1px solid white;
-border-radius:25px;
-backdrop-filter:blur(10px);
-cursor:pointer;
 }
-
 </style>
+
 </head>
 
 <body>
 
-<!-- INTRO -->
-<div id="intro">
-<h1>ARCHITECTURE AR STUDIO</h1>
-<button id="startBtn">START AR</button>
-</div>
+<div class="controls">
 
-<!-- MODEL -->
-<model-viewer
-id="arModel"
-src="model.glb"
-ar
-ar-modes="webxr scene-viewer quick-look"
-camera-controls
-auto-rotate
-shadow-intensity="1"
-exposure="1"
-scale="1 1 1"
-environment-image="neutral"
->
-</model-viewer>
+<button onclick="placeModel()">PLACE</button>
+<button onclick="realSize()">REAL</button>
+<button onclick="tableSize()">TABLE</button>
 
-<!-- CONTROLS INSIDE AR -->
-<div id="controls">
+<button onclick="rotY(-15)">↺</button>
+<button onclick="rotY(15)">↻</button>
 
-<button class="btn" onclick="realScale()">Real Size</button>
+<button onclick="up()">⬆</button>
+<button onclick="down()">⬇</button>
 
-<button class="btn" onclick="tableScale()">Table Model</button>
-
-<button class="btn" onclick="heightUp()">Height +</button>
-
-<button class="btn" onclick="heightDown()">Height -</button>
+<button onclick="remove()">REMOVE</button>
 
 </div>
+
+
+<a-scene
+webxr="requiredFeatures: hit-test,local-floor"
+renderer="colorManagement:true"
+vr-mode-ui="enabled:false"
+xr-mode-ui="enabled:true">
+
+<a-camera position="0 1.6 0"></a-camera>
+
+<a-entity id="model"
+gltf-model="1.glb"
+visible="false"
+scale="0.5 0.5 0.5">
+</a-entity>
+
+</a-scene>
 
 <script>
 
-const intro = document.getElementById("intro");
-const model = document.getElementById("arModel");
-const controls = document.getElementById("controls");
+let model=document.querySelector("#model");
 
-/* ---------- START AR ---------- */
+let placed=false;
+let rot=0;
+let height=0;
+let scale=0.5;
 
-document.getElementById("startBtn").onclick = () =>{
+/* PLACE MODEL ON REAL SURFACE */
 
-intro.style.display="none";
+function placeModel(){
 
-model.style.display="block";
+let cam=document.querySelector("a-camera");
 
-/* show buttons only after AR starts */
-setTimeout(()=>{
-controls.style.display="flex";
-},1500);
+let pos=cam.object3D.position;
 
-};
+model.setAttribute("position",
+`${pos.x} ${pos.y-1} ${pos.z-2}`);
 
-/* ---------- SCALE OPTIONS ---------- */
-
-function realScale(){
-model.scale="1 1 1";
+model.setAttribute("visible",true);
+placed=true;
 }
 
-function tableScale(){
-model.scale="0.3 0.3 0.3";
+/* SCALE */
+
+function realSize(){
+scale=8;
+model.setAttribute("scale",`${scale} ${scale} ${scale}`);
 }
 
-/* ---------- HEIGHT CONTROL ---------- */
-
-let height = 0;
-
-function heightUp(){
-height+=0.1;
-model.style.transform=
-`translateY(-${height*100}px)`;
+function tableSize(){
+scale=0.5;
+model.setAttribute("scale",`${scale} ${scale} ${scale}`);
 }
 
-function heightDown(){
-height-=0.1;
-model.style.transform=
-`translateY(-${height*100}px)`;
+/* ROTATE */
+
+function rotY(v){
+rot+=v;
+model.setAttribute("rotation",`0 ${rot} 0`);
+}
+
+/* HEIGHT */
+
+function up(){
+height+=0.2;
+let p=model.getAttribute("position");
+model.setAttribute("position",
+`${p.x} ${p.y+0.2} ${p.z}`);
+}
+
+function down(){
+height-=0.2;
+let p=model.getAttribute("position");
+model.setAttribute("position",
+`${p.x} ${p.y-0.2} ${p.z}`);
+}
+
+/* REMOVE */
+
+function remove(){
+model.setAttribute("visible",false);
+placed=false;
 }
 
 </script>
