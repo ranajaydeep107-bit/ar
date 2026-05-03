@@ -9,199 +9,35 @@ src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
 
 <style>
-
 body{
 margin:0;
 background:black;
 overflow:hidden;
-font-family:sans-serif;
 }
-
-/* -------- START SCREEN -------- */
-
-.startUI{
-position:fixed;
-bottom:30px;
-width:100%;
-text-align:center;
-z-index:10;
-}
-
-button{
-padding:14px 18px;
-margin:5px;
-font-size:15px;
-border-radius:12px;
-border:none;
-background:white;
-}
-
-/* -------- AR CONTROLS -------- */
-
-.arUI{
-display:none;
-position:fixed;
-bottom:15px;
-width:100%;
-text-align:center;
-z-index:20;
-}
-
 </style>
+
 </head>
 
 <body>
 
-<!-- ================= MODEL ================= -->
-
 <model-viewer
-id="viewer"
 src="1.glb"
+
 ar
 ar-modes="webxr scene-viewer quick-look"
-camera-controls
-shadow-intensity="1"
-environment-image="neutral"
+
+camera-controls="false"
+auto-rotate="false"
+
 placement="floor"
 interaction-prompt="auto"
+ar-scale="fixed"
+
+shadow-intensity="1"
+environment-image="neutral"
+
 style="width:100vw;height:100vh;">
 </model-viewer>
-
-<!-- ===== START BUTTON ===== -->
-
-<div class="startUI" id="startUI">
-<button onclick="startAR()">START AR</button>
-</div>
-
-<!-- ===== AR CONTROLS ===== -->
-
-<div class="arUI" id="arUI">
-
-<button onclick="tableSize()">TABLE</button>
-<button onclick="realSize()">REAL</button>
-
-<br>
-
-<button onclick="rotateLeft()">⟲</button>
-<button onclick="rotateRight()">⟳</button>
-
-<br>
-
-<button onclick="moveForward()">⬆</button>
-<button onclick="moveBack()">⬇</button>
-<button onclick="moveLeft()">⬅</button>
-<button onclick="moveRight()">➡</button>
-
-<br>
-
-<button onclick="heightUp()">HEIGHT +</button>
-<button onclick="heightDown()">HEIGHT -</button>
-
-<br>
-
-<button onclick="removeModel()">REMOVE</button>
-
-</div>
-
-<script>
-
-const viewer=document.querySelector("#viewer");
-const startUI=document.querySelector("#startUI");
-const arUI=document.querySelector("#arUI");
-
-let scaleValue=1;
-let height=0;
-let posX=0;
-let posZ=0;
-let rot=0;
-
-/* ================= ENTER AR ================= */
-
-function startAR(){
-viewer.activateAR();
-}
-
-/* SHOW CONTROLS ONLY IN AR */
-
-viewer.addEventListener("ar-status",(e)=>{
-
-if(e.detail.status==="session-started"){
-startUI.style.display="none";
-arUI.style.display="block";
-}
-
-});
-
-/* ================= SCALE ================= */
-
-function tableSize(){
-scaleValue=1;
-viewer.scale=`${scaleValue} ${scaleValue} ${scaleValue}`;
-}
-
-function realSize(){
-scaleValue=12;
-viewer.scale=`${scaleValue} ${scaleValue} ${scaleValue}`;
-}
-
-/* ================= ROTATION ================= */
-
-function rotateLeft(){
-rot-=15;
-viewer.orientation=`0 ${rot} 0`;
-}
-
-function rotateRight(){
-rot+=15;
-viewer.orientation=`0 ${rot} 0`;
-}
-
-/* ================= POSITION ================= */
-
-function moveForward(){
-posZ-=0.2;
-updatePosition();
-}
-
-function moveBack(){
-posZ+=0.2;
-updatePosition();
-}
-
-function moveLeft(){
-posX-=0.2;
-updatePosition();
-}
-
-function moveRight(){
-posX+=0.2;
-updatePosition();
-}
-
-function updatePosition(){
-viewer.style.transform=
-`translate3d(${posX*100}px, ${-height*100}px, ${posZ*100}px)`;
-}
-
-/* ================= HEIGHT ================= */
-
-function heightUp(){
-height+=0.1;
-updatePosition();
-}
-
-function heightDown(){
-height-=0.1;
-updatePosition();
-}
-
-/* ================= REMOVE ================= */
-
-function removeModel(){
-viewer.style.display="none";
-}
-
-</script>
 
 </body>
 </html>
