@@ -1,50 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script type="module"
 src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
 </script>
+
+<title>AR Model Viewer</title>
 
 <style>
 
 body{
 margin:0;
 background:black;
-font-family:sans-serif;
+font-family:Arial;
 overflow:hidden;
 }
 
-/* ---------- START SCREEN ---------- */
-
-.startUI{
+/* START SCREEN */
+#startScreen{
 position:fixed;
-bottom:30px;
 width:100%;
-text-align:center;
+height:100%;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
 z-index:10;
 }
 
-button{
-padding:14px 18px;
-margin:6px;
-font-size:16px;
-border-radius:12px;
+#startBtn{
+padding:15px 40px;
+font-size:18px;
+border-radius:10px;
 border:none;
-background:white;
 }
 
-/* ---------- AR CONTROLS (HIDDEN FIRST) ---------- */
-
-.arUI{
+/* MODEL */
+model-viewer{
+width:100vw;
+height:100vh;
 display:none;
+}
+
+/* CONTROL PANEL */
+#controls{
 position:fixed;
 bottom:20px;
 width:100%;
 text-align:center;
-z-index:20;
+z-index:9999;
+display:none;
+}
+
+button{
+padding:12px 18px;
+margin:5px;
+font-size:15px;
+border-radius:8px;
+border:none;
 }
 
 </style>
@@ -52,114 +68,108 @@ z-index:20;
 
 <body>
 
-<!-- ================= MODEL VIEWER ================= -->
+<!-- START SCREEN -->
+<div id="startScreen">
+<button id="startBtn">START AR</button>
+</div>
 
+<!-- MODEL -->
 <model-viewer
 id="viewer"
-src="1.glb"
+src="model.glb"
 ar
 ar-modes="webxr scene-viewer quick-look"
 camera-controls
 auto-rotate
 shadow-intensity="1"
-environment-image="neutral"
-style="width:100vw;height:100vh;">
+scale="1 1 1">
 </model-viewer>
 
+<!-- CONTROL BUTTONS -->
+<div id="controls">
 
-<!-- ================= START BUTTON ONLY ================= -->
+<button onclick="realLife()">Real Size</button>
+<button onclick="tableTop()">Table Mode</button>
 
-<div class="startUI" id="startUI">
-<button onclick="startAR()">START AR</button>
-</div>
-
-
-<!-- ================= AR CONTROLS ================= -->
-
-<div class="arUI" id="arUI">
-
-<button onclick="tableSize()">TABLE SIZE</button>
-<button onclick="realSize()">REAL SIZE</button>
 <br>
 
-<button onclick="rotateLeft()">⟲</button>
-<button onclick="rotateRight()">⟳</button>
-<br>
+<button onclick="zoomIn()">Zoom +</button>
+<button onclick="zoomOut()">Zoom -</button>
 
-<button onclick="heightUp()">HEIGHT +</button>
-<button onclick="heightDown()">HEIGHT -</button>
-<br>
+<button onclick="moveUp()">Height +</button>
+<button onclick="moveDown()">Height -</button>
 
-<button onclick="removeModel()">REMOVE</button>
+<button onclick="rotate()">Rotate</button>
+<button onclick="reset()">Reset</button>
 
 </div>
-
 
 <script>
 
-const viewer=document.querySelector("#viewer");
-const startUI=document.querySelector("#startUI");
-const arUI=document.querySelector("#arUI");
+const viewer = document.getElementById("viewer");
+const startBtn = document.getElementById("startBtn");
+const startScreen = document.getElementById("startScreen");
+const controls = document.getElementById("controls");
 
-let height=0;
-
-/* ================= ENTER AR ================= */
-
-function startAR(){
+/* START AR */
+startBtn.onclick = () => {
+startScreen.style.display="none";
+viewer.style.display="block";
 viewer.activateAR();
-}
+};
 
-/* SHOW BUTTONS ONLY AFTER AR STARTS */
-
+/* SHOW BUTTONS AFTER CAMERA START */
 viewer.addEventListener("ar-status", (event)=>{
 if(event.detail.status==="session-started"){
-startUI.style.display="none";
-arUI.style.display="block";
+controls.style.display="block";
 }
 });
 
-/* ================= SCALE ================= */
+/* SCALE MODES */
 
-function tableSize(){
-viewer.scale="1 1 1";
+function realLife(){
+viewer.scale = "1 1 1";
 }
 
-function realSize(){
-viewer.scale="15 15 15"; // adjust building real size
+function tableTop(){
+viewer.scale = "0.2 0.2 0.2";
 }
 
-/* ================= ROTATION ================= */
-
-function rotateLeft(){
-viewer.cameraOrbit =
-`${viewer.getCameraOrbit().theta - 15}deg 
-${viewer.getCameraOrbit().phi}deg 
-${viewer.getCameraOrbit().radius}m`;
+/* ZOOM */
+function zoomIn(){
+viewer.cameraOrbit="0deg 75deg 1m";
 }
 
-function rotateRight(){
-viewer.cameraOrbit =
-`${viewer.getCameraOrbit().theta + 15}deg 
-${viewer.getCameraOrbit().phi}deg 
-${viewer.getCameraOrbit().radius}m`;
+function zoomOut(){
+viewer.cameraOrbit="0deg 75deg 3m";
 }
 
-/* ================= HEIGHT CONTROL ================= */
+/* HEIGHT CONTROL */
+let height = 0;
 
-function heightUp(){
+function moveUp(){
 height += 0.1;
-viewer.style.transform=`translateY(-${height*100}px)`;
+viewer.style.transform =
+`translateY(-${height*50}px)`;
 }
 
-function heightDown(){
+function moveDown(){
 height -= 0.1;
-viewer.style.transform=`translateY(-${height*100}px)`;
+viewer.style.transform =
+`translateY(-${height*50}px)`;
 }
 
-/* ================= REMOVE ================= */
+/* ROTATION */
+function rotate(){
+viewer.autoRotate = !viewer.autoRotate;
+}
 
-function removeModel(){
-viewer.style.display="none";
+/* RESET */
+function reset(){
+viewer.cameraOrbit="0deg 75deg 2m";
+viewer.scale="1 1 1";
+viewer.style.transform="translateY(0px)";
+height = 0;
 }
 
 </script>
